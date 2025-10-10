@@ -1,0 +1,88 @@
+const User = require('../models/User');
+
+//get me
+exports.getMe = async (req, res) => {
+    res.status(200).json({ message: "User fetched successfully", user: req.user });
+}
+
+//get one user
+exports.getUser = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const user = await User.findById(id).select("-password");
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        res.status(200).json({ 
+            message: "User fetched successfully", 
+            user });
+
+    } catch (error) {
+        console.log("Error: ", error.message);
+        res.status(500).json({ message: 'Server Error' });
+    }
+}
+
+//get all users
+exports.getUsers = async (req, res) => {
+    try {
+        const users = await User.find({ role: 'accountant' }).select("-password");
+        
+        if (!users) {
+            return res.status(404).json({ message: "No users found", users });
+        }
+
+        res.status(200).json({ message: "Users fetched successfully", users });
+
+    } catch (error) {
+        console.log("Error: ", error.message);
+        res.status(500).json({ message: 'Server Error' });
+    }
+}
+
+// approve accountant
+exports.approveAccountant = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const user = await User.findById(id);
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        user.isApproved = true;
+        await user.save();
+
+        res.status(200).json({ message: "Accountant approved successfully", user });
+        
+    } catch (error) {
+        console.log("Error: ", error.message);
+        res.status(500).json({ message: 'Server Error' });
+    }
+}
+
+//delete user
+exports.deleteUser = async (req, res) => {
+    const { id } = req.params;
+
+    if (req.user.role !== 'admin' && req.user.id !== id) {
+        return res.status(403).json({ message: "Unauthorized to delete this user" });
+    }
+
+    try {
+        const user = await User.findByIdAndDelete(id).select('-password');
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        res.status(204).json({ message: "User deleted successfully" });
+
+    } catch (error) {
+        console.log("Error: ", error.message);
+        res.status(500).json({ message: 'Server Error' });
+    }
+}

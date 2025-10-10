@@ -15,8 +15,12 @@ const UserSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        enum: ['admin', 'accountant', 'manager'],
-        default: 'user'
+        enum: ['admin', 'accountant'],
+        default: 'accountant'
+    },
+    isApproved: {
+        type: Boolean,
+        default: false
     },
     company: {
         type: mongoose.Types.ObjectId,

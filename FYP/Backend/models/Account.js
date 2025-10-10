@@ -9,14 +9,6 @@ const AccountSchema = new mongoose.Schema({
         enum: ['debit', 'credit'],
         required: true
     },
-    openingBalance: {
-        type: Number,
-        default: 0
-    },
-    currentBalance: {
-        type: Number,
-        default: 0
-    },
     category: {
         type: String,
         required: true
@@ -24,7 +16,16 @@ const AccountSchema = new mongoose.Schema({
     subCategory: {
         type: String,
         required: true
-    }
+    },
+    yearlyBalances: [{
+        financialYear: {
+            type: mongoose.Types.ObjectId,
+            ref: 'FinancialYear'
+        },
+        openingBalance: Number,
+        closingBalance: Number
+    }]
+
 }, { timestamps: true });
 
 const Account = mongoose.model("Account", AccountSchema);
