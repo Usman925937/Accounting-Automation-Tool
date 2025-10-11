@@ -1,8 +1,25 @@
 const User = require('../models/User');
+const Company = require('../models/Company');
 
 //get me
 exports.getMe = async (req, res) => {
-    res.status(200).json({ message: "User fetched successfully", user: req.user });
+    
+    // find company
+    const company = await Company.findOne({ _id: req.user.company }).select('name');
+    if (!company) {
+        return res.status(404).json({ message: "No such company exists" });
+    }
+
+    res.status(200).json({
+        message: "User fetched successfully",
+        user: {
+            name: req.user.name,
+            email: req.user.email,
+            role: req.user.role,
+            company: company.name,
+            isApproved: req.user.isApproved
+        }
+    });
 }
 
 //get one user
@@ -16,9 +33,10 @@ exports.getUser = async (req, res) => {
             return res.status(404).json({ message: "User not found" });
         }
 
-        res.status(200).json({ 
-            message: "User fetched successfully", 
-            user });
+        res.status(200).json({
+            message: "User fetched successfully",
+            user
+        });
 
     } catch (error) {
         console.log("Error: ", error.message);
@@ -30,7 +48,7 @@ exports.getUser = async (req, res) => {
 exports.getUsers = async (req, res) => {
     try {
         const users = await User.find({ role: 'accountant' }).select("-password");
-        
+
         if (!users) {
             return res.status(404).json({ message: "No users found", users });
         }
@@ -58,7 +76,7 @@ exports.approveAccountant = async (req, res) => {
         await user.save();
 
         res.status(200).json({ message: "Accountant approved successfully", user });
-        
+
     } catch (error) {
         console.log("Error: ", error.message);
         res.status(500).json({ message: 'Server Error' });

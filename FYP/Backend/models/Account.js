@@ -22,9 +22,24 @@ const AccountSchema = new mongoose.Schema({
             type: mongoose.Types.ObjectId,
             ref: 'FinancialYear'
         },
-        openingBalance: Number,
-        closingBalance: Number
-    }]
+        openingBalance: {
+            type: Number,
+            default: 0
+        },
+        closingBalance: {
+            type: Number,
+            default: 0
+        }
+    }],
+    balance: {
+        type: Number,
+        default: 0
+    },
+    company: {
+        type: mongoose.Types.ObjectId,
+        ref: 'Company',
+        required: true
+    }
 
 }, { timestamps: true });
 

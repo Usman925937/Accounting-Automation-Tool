@@ -69,8 +69,6 @@ exports.login = async (req, res) => {
         }
 
         const token = genToken(user._id);
-        let userData = user.toObject();
-        delete userData.password;
 
         res.cookie("token", token, {
             httpOnly: true,
@@ -79,7 +77,13 @@ exports.login = async (req, res) => {
             maxAge: 7 * 24 * 60 * 60 * 1000
         }).status(200).json({
             message: 'Logged in successfully',
-            user: userData
+            user: {
+                name: newUser.name,
+                email: newUser.email,
+                role: newUser.role,
+                company: company.name,
+                isApproved: newUser.isApproved
+            }
         });
 
     } catch (error) {

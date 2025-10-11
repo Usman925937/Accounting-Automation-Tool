@@ -24,11 +24,7 @@ const CompanySchema = new mongoose.Schema({
     type: {
         enum: ['Conventional', 'Islamic'],
         default: 'Conventional'
-    },
-    accounts: [{
-        type: mongoose.Types.ObjectId,
-        ref: 'Account'
-    }]
+    }
 }, {timestamps: true});
 
 const Company = mongoose.model("Company", CompanySchema);
