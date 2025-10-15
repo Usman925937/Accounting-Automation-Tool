@@ -1,15 +1,20 @@
 import { NavLink } from 'react-router-dom';
-import { 
-  Calculator, 
-  TrendingUp, 
-  FileText, 
+import {
+  Calculator,
+  TrendingUp,
+  FileText,
   PieChart,
   X,
   Plus,
   Activity,
-  LogOut
+  LogOut,
+  Wallet
 } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
+import { useState } from 'react';
+import api from '../../api/api';
+import useAlertStore from '../../store/alertStore';
+import Spinner from './Spinner';
 
 interface SidebarProps {
   sidebarOpen: boolean;
@@ -18,39 +23,50 @@ interface SidebarProps {
 
 function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
   const { user, logout } = useAuthStore();
+  const [loading, setLoading] = useState(false);
+  const { addAlert } = useAlertStore();
 
   // navigation
   const navigation = [
     { id: 'dashboard', name: 'Dashboard', icon: TrendingUp, color: 'text-blue-600', path: '/dashboard' },
-    { id: 'health', name: 'Financial Health', icon: Activity, color: 'text-emerald-600', path: '/health' },
-    { id: 'transactions', name: 'Add Transaction', icon: Plus, color: 'text-green-600', path: '/transactions' },
+    { id: 'health', name: 'Financial Health', icon: Activity, color: 'text-emerald-600', path: '/financial-health' },
+    { id: 'transactions', name: 'Add Transaction', icon: Plus, color: 'text-green-600', path: '/add-transaction' },
     { id: 'journal', name: 'Journal Entries', icon: FileText, color: 'text-purple-600', path: '/journal' },
     { id: 'ledgers', name: 'Ledgers', icon: Calculator, color: 'text-orange-600', path: '/ledgers' },
-    { id: 'trial', name: 'Trial Balance', icon: PieChart, color: 'text-pink-600', path: '/trial' },
-    { id: 'statements', name: 'Financial Statements', icon: FileText, color: 'text-indigo-600', path: '/statements' },
+    { id: 'trial', name: 'Trial Balance', icon: PieChart, color: 'text-pink-600', path: '/trial-balance' },
+    { id: 'statements', name: 'Financial Statements', icon: FileText, color: 'text-indigo-600', path: '/financial-statements' },
+
+    // ✅ New Accounts Button
+    { id: 'accounts', name: 'Accounts', icon: Wallet, color: 'text-teal-600', path: '/accounts' },
   ];
 
   const handleLogout = async () => {
-    //setLoading(true);
+    setLoading(true);
     try {
-        //const res = await api.post('/auth/logout');
-        logout();
-        //addAlert(res.data.message, "success");
+      await api.post('/auth/logout');
+      logout();
+      addAlert("Logged out successfully", "success");
     } catch (error) {
-        //addAlert("Logout failed", "error");
-        return;
+      addAlert("Logout failed", "error");
+      return;
     } finally {
-        //setLoading(false);
+      setLoading(false);
     }
-};
+  };
 
+  if (loading) return <Spinner />;
 
   return (
     <>
       {/* Mobile sidebar */}
       <div className={`fixed inset-0 flex z-40 md:hidden ${sidebarOpen ? '' : 'pointer-events-none'}`}>
-        <div className={`fixed inset-0 bg-gray-900 bg-opacity-50 backdrop-blur-sm transition-opacity duration-300 ${sidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={() => setSidebarOpen(false)} />
-        <div className={`relative flex-1 flex flex-col max-w-xs w-full bg-white/95 backdrop-blur-xl border-r border-white/20 shadow-2xl transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <div
+          className={`fixed inset-0 bg-gray-900 bg-opacity-50 backdrop-blur-sm transition-opacity duration-300 ${sidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+          onClick={() => setSidebarOpen(false)}
+        />
+        <div
+          className={`relative flex-1 flex flex-col max-w-xs w-full bg-white/95 backdrop-blur-xl border-r border-white/20 shadow-2xl transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
+        >
           <div className="absolute top-0 right-0 -mr-12 pt-2">
             <button
               type="button"
@@ -67,17 +83,17 @@ function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
               </div>
               <span className="ml-3 text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">Accounting Bot</span>
             </div>
-            
+
             {/* User Profile - Mobile */}
             <div className="px-4 mt-6 mb-4">
               <div className="flex items-center p-3 bg-white/60 rounded-xl">
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-gray-900 truncate">{user.name}</p>
-                  <p className="text-xs text-gray-600 truncate">{user.company}</p>
+                  <p className="text-xs text-gray-600 truncate">{user.company.companyName}</p>
                 </div>
               </div>
             </div>
-            
+
             <nav className="mt-8 px-3 space-y-2">
               {navigation.map((item) => {
                 const Icon = item.icon;
@@ -96,7 +112,11 @@ function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
                   >
                     {({ isActive }) => (
                       <>
-                        <Icon className={`mr-3 h-5 w-5 ${isActive ? 'text-white' : `${item.color} group-hover:${item.color}`}`} />
+                        <Icon
+                          className={`mr-3 h-5 w-5 ${
+                            isActive ? 'text-white' : `${item.color} group-hover:${item.color}`
+                          }`}
+                        />
                         {item.name}
                       </>
                     )}
@@ -104,7 +124,7 @@ function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
                 );
               })}
             </nav>
-            
+
             {/* Logout Button - Mobile */}
             <div className="px-3 mt-6">
               <button
@@ -128,22 +148,24 @@ function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
                 <Calculator className="h-7 w-7 text-white" />
               </div>
               <div className="ml-4">
-                <span className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">Accounting Bot</span>
+                <span className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+                  Accounting Bot
+                </span>
                 <p className="text-xs text-gray-500 mt-1">AI-Powered IFRS Compliance</p>
               </div>
             </div>
-            
+
             {/* User Profile - Desktop */}
             <div className="px-6 mb-6">
               <div className="flex items-center p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl border border-blue-100">
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-bold text-gray-900 truncate">{user.name}</p>
-                  <p className="text-xs text-blue-600 truncate font-medium">{user.company}</p>
+                  <p className="text-xs text-blue-600 truncate font-medium">{user.company.companyName}</p>
                   <p className="text-xs text-gray-500 truncate">{user.email}</p>
                 </div>
               </div>
             </div>
-            
+
             <nav className="flex-1 px-4 space-y-2">
               {navigation.map((item) => {
                 const Icon = item.icon;
@@ -161,7 +183,11 @@ function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
                   >
                     {({ isActive }) => (
                       <>
-                        <Icon className={`mr-3 h-5 w-5 ${isActive ? 'text-white' : `${item.color} group-hover:${item.color}`}`} />
+                        <Icon
+                          className={`mr-3 h-5 w-5 ${
+                            isActive ? 'text-white' : `${item.color} group-hover:${item.color}`
+                          }`}
+                        />
                         {item.name}
                       </>
                     )}
@@ -169,7 +195,7 @@ function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
                 );
               })}
             </nav>
-            
+
             {/* Logout Button - Desktop */}
             <div className="px-4 pb-4">
               <button

@@ -15,7 +15,7 @@ exports.register = async (req, res) => {
         }
 
         // find company
-        const company = await Company.findOne({ name: companyName });
+        const company = await Company.findOne({ companyName: companyName });
         if (!company) {
             return res.status(404).json({ message: "No such company exists" });
         }
@@ -44,7 +44,7 @@ exports.register = async (req, res) => {
                 name: newUser.name,
                 email: newUser.email,
                 role: newUser.role,
-                company: company.name,
+                company,
                 isApproved: newUser.isApproved
             }
         });
@@ -58,7 +58,7 @@ exports.register = async (req, res) => {
 exports.login = async (req, res) => {
     try {
         const { email, password } = req.body;
-        const user = await User.findOne({ email });
+        const user = await User.findOne({ email }).populate('company');
         if (!user) {
             return res.status(404).json({ message: 'Invalid credentials' });
         }
@@ -78,11 +78,11 @@ exports.login = async (req, res) => {
         }).status(200).json({
             message: 'Logged in successfully',
             user: {
-                name: newUser.name,
-                email: newUser.email,
-                role: newUser.role,
-                company: company.name,
-                isApproved: newUser.isApproved
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                company: user.company,
+                isApproved: user.isApproved
             }
         });
 

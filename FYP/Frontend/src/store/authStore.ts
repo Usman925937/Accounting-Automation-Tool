@@ -7,11 +7,7 @@ interface AuthState {
 }
 
 const useAuthStore = create<AuthState>((set) => ({
-    user: {
-        name: 'Yamin Kazmi',
-        email: 'yaminkazmi@gmail.com',
-        company: 'Kazmi Developers Inc.'
-    },
+    user: null,
     setUser: (user) => {
         set({ user })
     },

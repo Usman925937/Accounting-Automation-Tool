@@ -1,6 +1,7 @@
 import { Menu, ChevronDown, User } from 'lucide-react';
 import { useState } from 'react';
 import useAuthStore from '../../store/authStore';
+import { Link } from 'react-router';
 
 interface NavbarProps {
     setSidebarOpen: (open: boolean) => void;
@@ -46,16 +47,25 @@ const Navbar = ({ setSidebarOpen }: NavbarProps) => {
                                     <div>
                                         <p className="font-semibold text-gray-900">{user.name}</p>
                                         <p className="text-sm text-gray-600">{user.email}</p>
-                                        <p className="text-xs text-blue-600 font-medium">{user.company}</p>
+                                        <p className="text-xs text-blue-600 font-medium">{user.company.companyName}</p>
                                     </div>
                                 </div>
                             </div>
 
                             <div className="py-2">
-                                <button className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                                <Link
+                                    to='/auth/profile'
+                                    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
                                     <User className="h-4 w-4 mr-3 text-gray-400" />
                                     Profile Settings
-                                </button>
+                                </Link>
+                                {user.role === 'admin' &&
+                                    <Link
+                                        to='/admin'
+                                        className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                                        <User className="h-4 w-4 mr-3 text-gray-400" />
+                                        Admin Page
+                                    </Link>}
                             </div>
                         </div>
                     )}

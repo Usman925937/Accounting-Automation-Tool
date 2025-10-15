@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const CompanySchema = new mongoose.Schema({
     companyName: {
         type: String,
+        unique: true,
         required: true
     },
     email: {
@@ -21,9 +22,15 @@ const CompanySchema = new mongoose.Schema({
         unique: true,
         required: true
     },
-    type: {
-        enum: ['Conventional', 'Islamic'],
-        default: 'Conventional'
+    financeType: {
+        type: String,
+        enum: ['conventional', 'islamic'],
+        default: 'conventional'
+    },
+    businessType: {
+        type: String,
+        enum: ['service', 'merchandising', 'manufacturing', 'hybrid'],
+        default: 'Hybrid'
     }
 }, {timestamps: true});
 

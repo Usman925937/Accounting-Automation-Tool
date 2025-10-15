@@ -3,9 +3,9 @@ const Company = require('../models/Company');
 
 //get me
 exports.getMe = async (req, res) => {
-    
+
     // find company
-    const company = await Company.findOne({ _id: req.user.company }).select('name');
+    const company = await Company.findOne({ _id: req.user.company });
     if (!company) {
         return res.status(404).json({ message: "No such company exists" });
     }
@@ -16,7 +16,7 @@ exports.getMe = async (req, res) => {
             name: req.user.name,
             email: req.user.email,
             role: req.user.role,
-            company: company.name,
+            company,
             isApproved: req.user.isApproved
         }
     });
@@ -33,6 +33,10 @@ exports.getUser = async (req, res) => {
             return res.status(404).json({ message: "User not found" });
         }
 
+        if (req.user.company !== user.company) {
+            return res.status(403).json({ message: "Unauthorized to fetch this user" });
+        }
+
         res.status(200).json({
             message: "User fetched successfully",
             user
@@ -47,7 +51,8 @@ exports.getUser = async (req, res) => {
 //get all users
 exports.getUsers = async (req, res) => {
     try {
-        const users = await User.find({ role: 'accountant' }).select("-password");
+        const users = await User.find({ role: 'accountant', company: req.user.company })
+            .select("-password");
 
         if (!users) {
             return res.status(404).json({ message: "No users found", users });
@@ -70,6 +75,10 @@ exports.approveAccountant = async (req, res) => {
 
         if (!user) {
             return res.status(404).json({ message: "User not found" });
+        }
+
+        if (req.user.company.toString() !== user.company.toString()) {
+            return res.status(403).json({ message: "Unauthorized to approve this user" });
         }
 
         user.isApproved = true;
@@ -95,6 +104,10 @@ exports.deleteUser = async (req, res) => {
         const user = await User.findByIdAndDelete(id).select('-password');
         if (!user) {
             return res.status(404).json({ message: "User not found" });
+        }
+
+        if (req.user.company !== user.company) {
+            return res.status(403).json({ message: "Unauthorized to delete this user" });
         }
 
         res.status(204).json({ message: "User deleted successfully" });

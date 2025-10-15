@@ -1,6 +1,8 @@
 const express = require('express');
 const authMiddleware = require('../middleware/authMiddleware');
+const isApprovedMiddleware = require('../middleware/isApprovedMiddleware');
 const adminMiddleware = require('../middleware/adminMiddleware');
+
 const {
     getMe,
     getUser,
@@ -12,8 +14,8 @@ const {
 const router = express.Router();
 
 router.get('/me', authMiddleware, getMe);
-router.get('/:id', authMiddleware, getUser);
-router.get('/', authMiddleware, getUsers);
+router.get('/:id', authMiddleware, isApprovedMiddleware, getUser);
+router.get('/', authMiddleware, adminMiddleware, getUsers);
 router.put('/:id', authMiddleware, adminMiddleware, approveAccountant);
 router.delete('/:id', authMiddleware, adminMiddleware, deleteUser);
 

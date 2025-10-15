@@ -5,7 +5,7 @@ const defaultAccounts = require("../data/defaultAccounts");
 // Create a new company + its default accounts
 exports.createCompany = async (req, res) => {
   try {
-    const { companyName, email, industry, address, code, type } = req.body;
+    const { companyName, email, industry, address, code, financeType, businessType } = req.body;
 
     // Create the company
     const company = await Company.create({
@@ -14,11 +14,21 @@ exports.createCompany = async (req, res) => {
       industry,
       address,
       code,
-      type
+      financeType,
+      businessType
+    });
+
+    // Filter default accounts based on business type and finance type
+    const filteredAccounts = defaultAccounts.filter(acc => {
+      const businessMatch =
+        acc.businessType === "hybrid" || acc.businessType === businessType;
+      const financeMatch =
+        acc.financeType === "hybrid" || acc.financeType === financeType;
+      return businessMatch && financeMatch;
     });
 
     // Generate default accounts for this company
-    const accountsWithCompany = defaultAccounts.map(acc => ({
+    const accountsWithCompany = filteredAccounts.map(acc => ({
       ...acc,
       company: company._id
     }));
@@ -27,7 +37,8 @@ exports.createCompany = async (req, res) => {
 
     res.status(201).json({
       message: "Company created successfully with default accounts",
-      company
+      company,
+      accounts: accountsWithCompany
     });
 
   } catch (error) {

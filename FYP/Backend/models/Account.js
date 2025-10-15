@@ -6,6 +6,7 @@ const AccountSchema = new mongoose.Schema({
         required: true
     },
     accountType: {
+        type: String,
         enum: ['debit', 'credit'],
         required: true
     },
@@ -16,6 +17,9 @@ const AccountSchema = new mongoose.Schema({
     subCategory: {
         type: String,
         required: true
+    },
+    financialStatement: {
+        type: String
     },
     yearlyBalances: [{
         financialYear: {
