@@ -1,10 +1,11 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
-import Layout from './components/Layout/Layout'
 import { useEffect, useState } from 'react';
-import Dashboard from './components/Dashboard/Dashboard';
-import Spinner from './components/Layout/Spinner';
 import useAuthStore from './store/authStore';
 import api from './api/api';
+
+import Layout from './components/Layout/Layout'
+import Dashboard from './components/Dashboard/Dashboard';
+import Spinner from './components/Layout/Spinner';
 import Alert from './components/Layout/Alert';
 import FinancialHealth from './components/FinancialHealth/FinancialHealth';
 import FinancialStatements from './components/FinancialStatements/FinancialStatements';
@@ -23,6 +24,8 @@ import AdminRoute from './components/Auth/AdminRoute';
 import ProtectedRoute from './components/Auth/ProtectedRoute';
 import GuestRoute from './components/Auth/GuestRoute';
 import Admin from './components/Auth/Admin';
+import NotFound from './components/Layout/NotFound';
+import AccountDetails from './components/Accounts/AccountDetails';
 
 const App = () => {
   const { setUser } = useAuthStore();
@@ -62,6 +65,7 @@ const App = () => {
           
           <Route path="accounts/add" element={<AddAccount />} />
           <Route path="accounts" element={<Accounts />} />
+          <Route path="accounts/:id" element={<AccountDetails />} />
 
           <Route path="company" element={<Company />} />
           <Route path="profile" element={<Profile />} />
@@ -71,6 +75,7 @@ const App = () => {
           <Route path="trial-balance" element={<TrialBalance />} />
         </Route>
 
+        {/* Profile */}
         <Route path="auth/profile" element={<Profile />} />
 
         {/* Guest Routes */}
@@ -80,6 +85,9 @@ const App = () => {
         {/* Admin Routes */}
         <Route path="admin" element={<AdminRoute><Admin /></AdminRoute>} />
         <Route path="accounts/:accountId/edit" element={<AdminRoute><EditAccount /></AdminRoute>} />
+
+        {/* Not Found */}
+        <Route path="*" element={<NotFound />} />
 
       </Routes>
     </BrowserRouter>

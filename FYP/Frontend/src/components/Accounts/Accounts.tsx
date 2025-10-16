@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Plus, Edit2, Wallet, Filter } from 'lucide-react';
 import { Link } from 'react-router';
 import useAlertStore from '../../store/alertStore';
@@ -8,7 +8,6 @@ import useAuthStore from '../../store/authStore';
 
 const Accounts = () => {
   const [accounts, setAccounts] = useState<any[]>([]);
-  const [filteredAccounts, setFilteredAccounts] = useState<any[]>([]);
   const [financialStatementFilter, setFinancialStatementFilter] = useState('All');
   const [categoryFilter, setCategoryFilter] = useState('All');
   const [subcategoryFilter, setSubcategoryFilter] = useState('All');
@@ -33,27 +32,37 @@ const Accounts = () => {
     fetchAccounts();
   }, []);
 
-  useEffect(() => {
-    let filtered = [...accounts];
-    if (financialStatementFilter !== 'All')
-      filtered = filtered.filter(acc => acc.financialStatement === financialStatementFilter);
-    if (categoryFilter !== 'All')
-      filtered = filtered.filter(acc => acc.category === categoryFilter);
-    if (subcategoryFilter !== 'All')
-      filtered = filtered.filter(acc => acc.subCategory === subcategoryFilter);
+  // filter accounts based on selected filters
+  const filteredAccounts = useMemo(() => {
+    return accounts.filter(acc => {
+      return (
+        (financialStatementFilter === 'All' || acc.financialStatement === financialStatementFilter) &&
+        (categoryFilter === 'All' || acc.category === categoryFilter) &&
+        (subcategoryFilter === 'All' || acc.subCategory === subcategoryFilter)
+      );
+    });
+  }, [accounts, financialStatementFilter, categoryFilter, subcategoryFilter]);
+  
+  // derive unique filter options
+  const uniqueFinancialStatements = useMemo(
+    () => ['All', ...new Set(accounts.map(acc => acc.financialStatement))],
+    [accounts]
+  );
+  const uniqueCategories = useMemo(
+    () => ['All', ...new Set(accounts.map(acc => acc.category))],
+    [accounts]
+  );
+  const uniqueSubcategories = useMemo(
+    () => ['All', ...new Set(accounts.map(acc => acc.subCategory))],
+    [accounts]
+  );  
 
-    setFilteredAccounts(filtered);
-  }, [financialStatementFilter, categoryFilter, subcategoryFilter, accounts]);
-
-  const uniqueFinancialStatements = ['All', ...new Set(accounts.map(acc => acc.financialStatement))];
-  const uniqueCategories = ['All', ...new Set(accounts.map(acc => acc.category))];
-  const uniqueSubcategories = ['All', ...new Set(accounts.map(acc => acc.subCategory))];
-
+  // return
   if (loading) return <Spinner />;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-8">
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-600/5 via-purple-600/5 to-indigo-600/5"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-600/5 via-purple-600/5 to-indigo-600/5 pointer-events-none"></div>
 
       <div className="relative max-w-7xl mx-auto">
         {/* Header */}
@@ -142,9 +151,10 @@ const Accounts = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {filteredAccounts.map((account) => (
+                {filteredAccounts.slice(0, 10).map((account) => (
                   <tr key={account._id} className="hover:bg-blue-50/50 transition-all duration-200">
-                    <td className="px-6 py-4 text-sm font-medium text-gray-900">{account.accountName}</td>
+                    <td className="px-6 py-4 text-sm font-medium text-gray-900">
+                      <Link to={`/accounts/${account._id}`}>{account.accountName}</Link></td>
                     <td className="px-6 py-4">
                       <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
                         account.accountType === 'Debit'

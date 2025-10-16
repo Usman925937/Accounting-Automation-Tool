@@ -1,6 +1,7 @@
 import { Navigate } from "react-router";
 import useAuthStore from "../../store/authStore";
 import React from "react";
+import Unauthorized from "./Unauthorized";
 
 interface Props {
     children: React.ReactNode;
@@ -17,7 +18,7 @@ const AdminRoute = ({ children }: Props) => {
 
     // signed in but not approved
     if (user.role !== 'admin') {
-        return <Navigate to="/dashboard" replace />
+        return <Unauthorized />
     }
 
     return (

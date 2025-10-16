@@ -5,6 +5,7 @@ import api from '../../api/api';
 import useAlertStore from '../../store/alertStore';
 import Spinner from '../Layout/Spinner';
 import useAuthStore from '../../store/authStore';
+import NotFound from '../Layout/NotFound';
 
 const EditAccount = () => {
     const { accountId } = useParams();
@@ -46,6 +47,9 @@ const EditAccount = () => {
 
     // return
     if (loading) return <Spinner />;
+
+    // account not found
+    if (!account) return <NotFound />;
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-8">
