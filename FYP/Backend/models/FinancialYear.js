@@ -19,10 +19,6 @@ const FinancialYearSchema = new mongoose.Schema({
     },
     isActive: {
         type: Boolean,
-        default: true
-    },
-    isClosed: {
-        type: Boolean,
         default: false
     }
 
