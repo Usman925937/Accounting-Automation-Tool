@@ -13,4 +13,4 @@ router.get('/', authMiddleware, isApprovedMiddleware, getJournalEntries);
 router.put('/:id/approve', authMiddleware, adminMiddleware, approveEntry);
 router.put('/:id/reject', authMiddleware, adminMiddleware, rejectEntry);
 
-export default router;
+module.exports = router;

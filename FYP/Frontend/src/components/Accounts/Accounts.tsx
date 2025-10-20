@@ -173,7 +173,7 @@ const Accounts = () => {
                     <td className="px-6 py-4">
                       {user.role === 'admin' &&
                       <Link
-                        to={`/accounts/${account._id}/edit`}
+                        to={`/admin/accounts/${account._id}/edit`}
                         className="inline-flex items-center gap-1 px-3 py-2 bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white text-xs font-semibold rounded-lg transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105"
                       >
                         <Edit2 className="w-3 h-3" />

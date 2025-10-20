@@ -1,5 +1,5 @@
-const JournalEntry = require('../models/JournalEntry.js');
-const FinancialYear = require('../models/FinancialYear.js');
+const JournalEntry = require('../models/JournalEntry');
+const FinancialYear = require('../models/FinancialYear');
 
 // Create journal entry
 exports.createJournalEntry = async (req, res) => {

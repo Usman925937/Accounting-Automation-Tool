@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const FinancialYearSchema = new mongoose.Schema({
     companyId: {
-        types: mongoose.Types.ObjectId,
+        type: mongoose.Types.ObjectId,
         ref: 'Company'
     },
     name: {
@@ -19,7 +19,7 @@ const FinancialYearSchema = new mongoose.Schema({
     },
     isActive: {
         type: Boolean,
-        default: false
+        default: true
     }
 
 }, {timestamps: true});

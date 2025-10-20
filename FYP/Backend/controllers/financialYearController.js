@@ -1,4 +1,4 @@
-const FinancialYear = require('../models/FinancialYear.js');
+const FinancialYear = require('../models/FinancialYear');
 
 // Create a new financial year
 exports.createFinancialYear = async (req, res) => {
@@ -7,7 +7,7 @@ exports.createFinancialYear = async (req, res) => {
 
         // Check for existing active financial year
         const existingActive = await FinancialYear.findOne({
-            companyId: req.user.companyId,
+            companyId: req.user.company,
             isActive: true,
         });
 
@@ -59,6 +59,19 @@ exports.closeFinancialYear = async (req, res) => {
         await year.save();
 
         res.json({ message: 'Financial year closed successfully' });
+        
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// Delete a financial year
+exports.deleteFinancialYear = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const year = await FinancialYear.findByIdAndDelete(id);
+        res.json({ message: 'Financial year deleted successfully' });
         
     } catch (error) {
         res.status(500).json({ message: error.message });

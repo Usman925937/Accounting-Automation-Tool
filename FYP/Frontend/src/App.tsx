@@ -23,9 +23,13 @@ import TrialBalance from './components/Transactions/TrialBalance';
 import AdminRoute from './components/Auth/AdminRoute';
 import ProtectedRoute from './components/Auth/ProtectedRoute';
 import GuestRoute from './components/Auth/GuestRoute';
-import Admin from './components/Auth/Admin';
+import Admin from './components/Admin/Admin';
 import NotFound from './components/Layout/NotFound';
 import AccountDetails from './components/Accounts/AccountDetails';
+import UserManagement from './components/Admin/UserManagement';
+import FinancialYears from './components/Admin/FinancialYears';
+import AddFinancialYear from './components/Admin/AddFinancialYear';
+import CloseFinancialYear from './components/Admin/CloseFinancialYear';
 
 const App = () => {
   const { setUser } = useAuthStore();
@@ -62,7 +66,7 @@ const App = () => {
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="financial-health" element={<FinancialHealth />} />
           <Route path="financial-statements" element={<FinancialStatements />} />
-          
+
           <Route path="accounts/add" element={<AddAccount />} />
           <Route path="accounts" element={<Accounts />} />
           <Route path="accounts/:id" element={<AccountDetails />} />
@@ -83,8 +87,16 @@ const App = () => {
         <Route path="auth/register" element={<GuestRoute><Register /></GuestRoute>} />
 
         {/* Admin Routes */}
-        <Route path="admin" element={<AdminRoute><Admin /></AdminRoute>} />
-        <Route path="accounts/:accountId/edit" element={<AdminRoute><EditAccount /></AdminRoute>} />
+        <Route path="/admin" element={<AdminRoute><Layout /></AdminRoute>}>
+          <Route index element={<Admin />} />
+          <Route path="users" element={<UserManagement />} />
+          
+          <Route path="financial-years" element={<FinancialYears />} />
+          <Route path="financial-years/add" element={<AddFinancialYear />} />
+          <Route path="financial-years/:id/close" element={<CloseFinancialYear />} />
+
+          <Route path="accounts/:accountId/edit" element={<EditAccount />} />
+        </Route>
 
         {/* Not Found */}
         <Route path="*" element={<NotFound />} />
