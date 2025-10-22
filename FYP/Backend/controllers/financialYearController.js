@@ -33,6 +33,19 @@ exports.createFinancialYear = async (req, res) => {
     }
 };
 
+// Get active financial year for a company
+exports.getActiveFinancialYear = async (req, res) => {
+    try {
+        const year = await FinancialYear
+            .findOne({ companyId: req.user.company, isActive: true });
+
+        res.json({ message: 'Active financial year retrieved successfully', financialYear: year });
+
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 // Get all financial years for a company
 exports.getFinancialYears = async (req, res) => {
     try {
