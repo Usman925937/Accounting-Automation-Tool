@@ -23,10 +23,16 @@ exports.createFinancialYear = async (req, res) => {
             endDate,
             isActive: true,
         });
+        
+        const financialYears = await FinancialYear
+            .find({ companyId: req.user.company })
+            .sort({ startDate: -1 });
 
         res.status(201).json({
             message: 'Financial year successfully created', 
-            financialYear: year});
+            activeFinancialYear: year,
+            financialYears
+        });
 
     } catch (error) {
         res.status(500).json({ message: error.message });

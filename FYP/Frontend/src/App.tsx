@@ -18,8 +18,8 @@ import Login from './components/Auth/Login';
 import Register from './components/Auth/Register';
 import JournalEntries from './components/Transactions/JournalEntries';
 import TransactionInput from './components/Transactions/TransactionInput';
-import Ledgers from './components/Transactions/Ledgers';
-import TrialBalance from './components/Transactions/TrialBalance';
+import Ledgers from './components/Transactions/Ledgers/Ledgers';
+import TrialBalance from './components/Transactions/TrialBalance/TrialBalance';
 import AdminRoute from './components/Auth/AdminRoute';
 import ProtectedRoute from './components/Auth/ProtectedRoute';
 import GuestRoute from './components/Auth/GuestRoute';
@@ -30,9 +30,16 @@ import UserManagement from './components/Admin/UserManagement';
 import FinancialYears from './components/Admin/FinancialYears';
 import AddFinancialYear from './components/Admin/AddFinancialYear';
 import CloseFinancialYear from './components/Admin/CloseFinancialYear';
+import useAccountingStore from './store/accountingStore';
 
 const App = () => {
   const { setUser } = useAuthStore();
+  const { 
+    setAccounts,
+    setJournalEntries,
+    setActiveFinancialYear,
+    setFinancialYears,
+    setSelectedFinancialYear } = useAccountingStore();
   const [loading, setLoading] = useState(true);
 
   // fetch user
@@ -42,6 +49,15 @@ const App = () => {
       try {
         const response = await api.get('/users/me');
         setUser(response.data.user);
+        setJournalEntries(response.data.journalEntries);
+
+        const res = await api.get('/');
+        setAccounts(res.data.accounts);
+        setActiveFinancialYear(res.data.financialYear);
+        setSelectedFinancialYear(res.data.financialYear);
+        setFinancialYears(res.data.financialYears);
+        setJournalEntries(res.data.journalEntries);
+
       } catch (error) {
         console.error("Failed to fetch user:", error);
       } finally {

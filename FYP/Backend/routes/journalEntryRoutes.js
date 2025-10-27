@@ -10,6 +10,7 @@ const router = express.Router();
 
 router.post('/', authMiddleware, isApprovedMiddleware, createJournalEntry);
 router.get('/', authMiddleware, isApprovedMiddleware, getJournalEntries);
+router.get('/:fy', authMiddleware, isApprovedMiddleware, getJournalEntries);
 router.put('/:id/approve', authMiddleware, adminMiddleware, approveEntry);
 router.put('/:id/reject', authMiddleware, adminMiddleware, rejectEntry);
 

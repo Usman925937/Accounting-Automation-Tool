@@ -2,17 +2,20 @@ import { Link, useNavigate, useParams } from "react-router";
 import { XCircle } from "lucide-react";
 import api from "../../api/api";
 import useAlertStore from "../../store/alertStore";
+import useAccountingStore from "../../store/accountingStore";
 
 const CloseFinancialYear = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const { addAlert } = useAlertStore();
+    const { setActiveFinancialYear } = useAccountingStore();
 
     //   close financial year
     const handleClose = async () => {
         try {
             await api.put(`/financial-years/${id}/close`);
             addAlert("Financial year closed successfully", "success");
+            setActiveFinancialYear(null);
             navigate("/admin/financial-years");
 
         } catch {

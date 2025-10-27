@@ -5,10 +5,12 @@ import api from '../../api/api';
 import useAlertStore from '../../store/alertStore';
 import useAuthStore from '../../store/authStore';
 import Spinner from '../Layout/Spinner';
+import useAccountingStore from '../../store/accountingStore';
 
 const AddAccount = () => {
     const { addAlert } = useAlertStore();
     const { user } = useAuthStore();
+    const { setAccounts } = useAccountingStore();
     const [account, setAccount] = useState({
         accountName: '',
         accountType: 'debit',
@@ -23,7 +25,9 @@ const AddAccount = () => {
         e.preventDefault();
         try {
             setLoading(true);
-            await api.post(`/companies/${user.company._id}/accounts`, account);
+            const res = await api.post(`/companies/${user.company._id}/accounts`, account);
+            setAccounts(res.data.accounts);
+
             addAlert('Account added successfully', 'success');
             setAccount({ accountName: '', accountType: 'debit', financialStatement: 'Balance Sheet', category: '', subCategory: '' });
         

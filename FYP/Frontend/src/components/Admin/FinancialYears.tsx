@@ -10,8 +10,7 @@ const FinancialYears = () => {
     const [financialYears, setFinancialYears] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const { addAlert } = useAlertStore();
-    const { user } = useAuthStore();
-
+    
     //   Fetch financial years on component mount
     useEffect(() => {
         const fetchFinancialYears = async () => {

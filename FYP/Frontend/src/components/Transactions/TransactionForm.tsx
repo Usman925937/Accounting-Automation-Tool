@@ -1,19 +1,15 @@
 import React, { useState } from "react";
 import { Send, Loader2, Plus } from "lucide-react";
+import useEntryStore from "../../store/entryStore";
+import useAccountingStore from "../../store/accountingStore";
 
 interface Props {
   mode: "ai" | "manual";
   onParse: (prompt: string) => void;
-  onManualSubmit: (data: any) => void;
   loading: boolean;
 }
 
-const TransactionForm: React.FC<Props> = ({
-  mode,
-  onParse,
-  onManualSubmit,
-  loading,
-}) => {
+const TransactionForm: React.FC<Props> = ({ mode, onParse, loading }) => {
   const [prompt, setPrompt] = useState("");
   const [manualData, setManualData] = useState({
     description: "",
@@ -21,6 +17,9 @@ const TransactionForm: React.FC<Props> = ({
     creditAccount: "",
     amount: "",
   });
+
+  const { setEntry } = useEntryStore();
+  const { accounts } = useAccountingStore();
 
   const handleAI = (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,10 +36,13 @@ const TransactionForm: React.FC<Props> = ({
       !manualData.amount
     )
       return;
-    onManualSubmit({
-      ...manualData,
-      amount: parseFloat(manualData.amount),
-    });
+
+    setEntry(
+      manualData.debitAccount,
+      manualData.creditAccount,
+      manualData.description,
+      parseFloat(manualData.amount)
+    );
   };
 
   return (
@@ -74,7 +76,10 @@ const TransactionForm: React.FC<Props> = ({
             }
             className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500/20 focus:border-green-500 outline-none bg-white/50"
           />
+
+          {/* Debit Account */}
           <input
+            list="debit-accounts"
             type="text"
             placeholder="Debit Account"
             value={manualData.debitAccount}
@@ -83,7 +88,15 @@ const TransactionForm: React.FC<Props> = ({
             }
             className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500/20 focus:border-green-500 outline-none bg-white/50"
           />
+          <datalist id="debit-accounts">
+            {accounts.map((acc: any) => (
+              <option key={acc._id || acc.accountName} value={acc.accountName} />
+            ))}
+          </datalist>
+
+          {/* Credit Account */}
           <input
+            list="credit-accounts"
             type="text"
             placeholder="Credit Account"
             value={manualData.creditAccount}
@@ -92,6 +105,12 @@ const TransactionForm: React.FC<Props> = ({
             }
             className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500/20 focus:border-green-500 outline-none bg-white/50"
           />
+          <datalist id="credit-accounts">
+            {accounts.map((acc: any) => (
+              <option key={acc._id || acc.accountName} value={acc.accountName} />
+            ))}
+          </datalist>
+
           <input
             type="number"
             placeholder="Amount"

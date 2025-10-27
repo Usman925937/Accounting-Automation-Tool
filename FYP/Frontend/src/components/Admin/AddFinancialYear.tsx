@@ -4,6 +4,7 @@ import { useNavigate } from "react-router";
 import api from "../../api/api";
 import useAuthStore from "../../store/authStore";
 import useAlertStore from "../../store/alertStore";
+import useAccountingStore from "../../store/accountingStore";
 
 const AddFinancialYear = () => {
   const [startDate, setStartDate] = useState("");
@@ -11,6 +12,7 @@ const AddFinancialYear = () => {
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const { addAlert } = useAlertStore();
+  const { setActiveFinancialYear, setFinancialYears } = useAccountingStore();
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
@@ -32,12 +34,15 @@ const AddFinancialYear = () => {
     }
 
     try {
-      await api.post("/financial-years", {
+      const res = await api.post("/financial-years", {
         companyId: user.company._id,
         startDate,
         endDate,
       });
       addAlert("Financial year added successfully", "success");
+      setActiveFinancialYear(res.data.activeFinancialYear);
+      setFinancialYears(res.data.financialYears);
+
       navigate("/admin/financial-years");
     } catch {
       addAlert("Failed to add financial year", "error");

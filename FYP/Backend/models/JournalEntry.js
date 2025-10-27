@@ -32,9 +32,14 @@ const JournalEntrySchema = new mongoose.Schema({
     ref: 'FinancialYear',
     required: true,
   },
+  company: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Company',
+    required: true,
+  },
   approved: {
     type: Boolean,
-    default: false,
+    default: true,
   },
 });
 

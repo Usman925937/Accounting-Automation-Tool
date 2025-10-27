@@ -1,22 +1,32 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { CheckCircle, Save, Edit3 } from "lucide-react";
+import useEntryStore from "../../store/entryStore";
+import useAccountingStore from "../../store/accountingStore";
 
 interface Props {
-  data: {
-    description: string;
-    debitAccount: string;
-    creditAccount: string;
-    amount: number;
-  };
-  onSave: (data: any) => void;
+  onSave: () => void;
 }
 
-const TransactionPreview: React.FC<Props> = ({ data, onSave }) => {
-  const [editableData, setEditableData] = useState(data);
+const TransactionPreview: React.FC<Props> = ({ onSave }) => {
+  const { entry, setEntry } = useEntryStore();
+  const [editableData, setEditableData] = useState(entry || null);
   const [isEditing, setIsEditing] = useState(false);
+  const { accounts } = useAccountingStore();
+
+  useEffect(() => {
+    setEditableData(entry || null);
+  }, [entry]);
+
+  if (!entry) return null;
 
   const handleSave = () => {
-    onSave(editableData);
+    if (!editableData) return;
+    const { debitAccount, creditAccount, description, amount } = editableData;
+
+    if (debitAccount && creditAccount && description && amount > 0) {
+      setEntry(debitAccount, creditAccount, description, amount);
+      onSave();
+    }
   };
 
   return (
@@ -30,41 +40,119 @@ const TransactionPreview: React.FC<Props> = ({ data, onSave }) => {
 
       <div className="grid md:grid-cols-2 gap-6 mb-6">
         <div className="space-y-3">
-          {["description", "debitAccount", "creditAccount", "amount"].map(
-            (key) => (
-              <div key={key} className="flex justify-between border-b pb-2">
-                <span className="capitalize text-gray-600">
-                  {key === "debitAccount"
-                    ? "Debit Account"
-                    : key === "creditAccount"
-                    ? "Credit Account"
-                    : key.charAt(0).toUpperCase() + key.slice(1)}
-                  :
-                </span>
-                {isEditing ? (
-                  <input
-                    required
-                    type={key === "amount" ? "number" : "text"}
-                    value={(editableData as any)[key]}
-                    min={key === "amount" ? "0" : undefined}
-                    onChange={(e) =>
-                      setEditableData({
-                        ...editableData,
-                        [key]:
-                          key === "amount"
-                            ? parseFloat(e.target.value)
-                            : e.target.value,
-                      })
-                    }
-                    className="ml-2 border-b border-gray-300 focus:border-blue-500 outline-none text-right w-40"
-                  />
-                ) : (
-                  <span className="font-medium text-gray-800 text-right ml-2">
-                    {(editableData as any)[key]}
-                  </span>
-                )}
+          {isEditing ? (
+            <div className="space-y-2">
+              {/* Description */}
+              <div className="flex justify-between">
+                <span className="font-medium text-gray-600">Description:</span>
+                <input
+                  required
+                  type="text"
+                  value={editableData?.description || ""}
+                  onChange={(e) =>
+                    setEditableData({
+                      ...editableData!,
+                      description: e.target.value,
+                    })
+                  }
+                  className="ml-2 border-b border-gray-300 focus:border-blue-500 outline-none text-right w-40"
+                />
               </div>
-            )
+
+              {/* Debit Account with dropdown */}
+              <div className="flex justify-between">
+                <span className="font-medium text-gray-600">Debit Account:</span>
+                <input
+                  list="preview-debit-accounts"
+                  required
+                  type="text"
+                  value={editableData?.debitAccount || ""}
+                  onChange={(e) =>
+                    setEditableData({
+                      ...editableData!,
+                      debitAccount: e.target.value,
+                    })
+                  }
+                  className="ml-2 border-b border-gray-300 focus:border-blue-500 outline-none text-right w-40"
+                />
+                <datalist id="preview-debit-accounts">
+                  {accounts.map((acc: any) => (
+                    <option key={acc._id || acc.accountName} value={acc.accountName} />
+                  ))}
+                </datalist>
+              </div>
+
+              {/* Credit Account with dropdown */}
+              <div className="flex justify-between">
+                <span className="font-medium text-gray-600">Credit Account:</span>
+                <input
+                  list="preview-credit-accounts"
+                  required
+                  type="text"
+                  value={editableData?.creditAccount || ""}
+                  onChange={(e) =>
+                    setEditableData({
+                      ...editableData!,
+                      creditAccount: e.target.value,
+                    })
+                  }
+                  className="ml-2 border-b border-gray-300 focus:border-blue-500 outline-none text-right w-40"
+                />
+                <datalist id="preview-credit-accounts">
+                  {accounts.map((acc: any) => (
+                    <option key={acc._id || acc.accountName} value={acc.accountName} />
+                  ))}
+                </datalist>
+              </div>
+
+              {/* Amount */}
+              <div className="flex justify-between">
+                <span className="font-medium text-gray-600">Amount:</span>
+                <input
+                  required
+                  type="number"
+                  min="0"
+                  value={editableData?.amount || ""}
+                  onChange={(e) =>
+                    setEditableData({
+                      ...editableData!,
+                      amount: parseFloat(e.target.value) || 0,
+                    })
+                  }
+                  className="ml-2 border-b border-gray-300 focus:border-blue-500 outline-none text-right w-40"
+                />
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <div className="flex justify-between">
+                <span className="font-medium text-gray-600">Description:</span>
+                <span className="font-medium text-gray-800 text-right ml-2">
+                  {editableData?.description || "-"}
+                </span>
+              </div>
+
+              <div className="flex justify-between">
+                <span className="font-medium text-gray-600">Debit Account:</span>
+                <span className="font-medium text-gray-800 text-right ml-2">
+                  {editableData?.debitAccount || "-"}
+                </span>
+              </div>
+
+              <div className="flex justify-between">
+                <span className="font-medium text-gray-600">Credit Account:</span>
+                <span className="font-medium text-gray-800 text-right ml-2">
+                  {editableData?.creditAccount || "-"}
+                </span>
+              </div>
+
+              <div className="flex justify-between">
+                <span className="font-medium text-gray-600">Amount:</span>
+                <span className="font-medium text-gray-800 text-right ml-2">
+                  {editableData?.amount ?? "-"}
+                </span>
+              </div>
+            </div>
           )}
         </div>
 
@@ -78,7 +166,8 @@ const TransactionPreview: React.FC<Props> = ({ data, onSave }) => {
           </button>
           <button
             onClick={handleSave}
-            className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold hover:from-green-700 hover:to-emerald-700 shadow-md hover:shadow-lg transition-all duration-200"
+            disabled={!editableData}
+            className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold hover:from-green-700 hover:to-emerald-700 shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-50"
           >
             <Save className="h-5 w-5" />
             Save Entry

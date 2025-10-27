@@ -1,36 +1,16 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Plus, Edit2, Wallet, Filter } from 'lucide-react';
 import { Link } from 'react-router';
-import useAlertStore from '../../store/alertStore';
-import api from '../../api/api';
-import Spinner from '../Layout/Spinner';
 import useAuthStore from '../../store/authStore';
+import useAccountingStore from '../../store/accountingStore';
 
 const Accounts = () => {
-  const [accounts, setAccounts] = useState<any[]>([]);
+  const { accounts } = useAccountingStore();
   const [financialStatementFilter, setFinancialStatementFilter] = useState('All');
   const [categoryFilter, setCategoryFilter] = useState('All');
   const [subcategoryFilter, setSubcategoryFilter] = useState('All');
 
-  const { addAlert } = useAlertStore();
   const { user } = useAuthStore();
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchAccounts = async () => {
-      setLoading(true);
-      try {
-        const res = await api.get(`companies/${user.company._id}/accounts`);
-        setAccounts(res.data.accounts);
-        addAlert('Accounts fetched successfully', 'success');
-      } catch (error) {
-        addAlert('Failed to fetch accounts', 'error');
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchAccounts();
-  }, []);
 
   // filter accounts based on selected filters
   const filteredAccounts = useMemo(() => {
@@ -58,8 +38,6 @@ const Accounts = () => {
   );  
 
   // return
-  if (loading) return <Spinner />;
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-8">
       <div className="absolute inset-0 bg-gradient-to-br from-blue-600/5 via-purple-600/5 to-indigo-600/5 pointer-events-none"></div>
@@ -151,13 +129,13 @@ const Accounts = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {filteredAccounts.slice(0, 10).map((account) => (
+                {filteredAccounts.map((account) => (
                   <tr key={account._id} className="hover:bg-blue-50/50 transition-all duration-200">
                     <td className="px-6 py-4 text-sm font-medium text-gray-900">
                       <Link to={`/accounts/${account._id}`}>{account.accountName}</Link></td>
                     <td className="px-6 py-4">
                       <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
-                        account.accountType === 'Debit'
+                        account.accountType === 'debit'
                           ? 'bg-gradient-to-r from-blue-100 to-cyan-100 text-blue-800'
                           : 'bg-gradient-to-r from-purple-100 to-pink-100 text-purple-800'
                       }`}>

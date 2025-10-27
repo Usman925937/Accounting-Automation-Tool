@@ -152,7 +152,9 @@ exports.editAccount = async (req, res) => {
     account.financialStatement = financialStatement;
     await account.save();
 
-    res.status(200).json({ message: "Account renamed successfully", account });
+    const accounts = await Account.find({ company: companyId });
+
+    res.status(200).json({ message: "Account renamed successfully", accounts });
   
 } catch (error) {
     res.status(500).json({

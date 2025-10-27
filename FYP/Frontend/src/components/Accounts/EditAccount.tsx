@@ -6,10 +6,13 @@ import useAlertStore from '../../store/alertStore';
 import Spinner from '../Layout/Spinner';
 import useAuthStore from '../../store/authStore';
 import NotFound from '../Layout/NotFound';
+import useAccountingStore from '../../store/accountingStore';
 
 const EditAccount = () => {
     const { accountId } = useParams();
     const { user } = useAuthStore();
+    const { setAccounts } = useAccountingStore();
+
     const [account, setAccount] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const { addAlert } = useAlertStore();
@@ -36,7 +39,9 @@ const EditAccount = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            await api.put(`/companies/${user.company._id}/accounts/${accountId}/edit`, account);
+            const res = await api.put(`/companies/${user.company._id}/accounts/${accountId}/edit`, account);
+            setAccounts(res.data.accounts);
+            
             addAlert('Account updated successfully', 'success');
             nav('/accounts');
 

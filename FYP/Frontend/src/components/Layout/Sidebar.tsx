@@ -15,6 +15,7 @@ import { useState } from 'react';
 import api from '../../api/api';
 import useAlertStore from '../../store/alertStore';
 import Spinner from './Spinner';
+import useAccountingStore from '../../store/accountingStore';
 
 interface SidebarProps {
   sidebarOpen: boolean;
@@ -25,6 +26,7 @@ function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
   const { user, logout } = useAuthStore();
   const [loading, setLoading] = useState(false);
   const { addAlert } = useAlertStore();
+  const { clearAccounts } = useAccountingStore();
 
   // navigation
   const navigation = [
@@ -45,6 +47,7 @@ function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
     try {
       await api.post('/auth/logout');
       logout();
+      clearAccounts();
       addAlert("Logged out successfully", "success");
     } catch (error) {
       addAlert("Logout failed", "error");
