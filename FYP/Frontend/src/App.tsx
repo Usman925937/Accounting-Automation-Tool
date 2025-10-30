@@ -81,14 +81,20 @@ const App = () => {
           <Route index element={<Navigate to="/dashboard" replace />} />
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="financial-health" element={<FinancialHealth />} />
+
+          {/* Financial Statements */}
           <Route path="financial-statements" element={<FinancialStatements />} />
 
+          {/* Accounts Management */}
           <Route path="accounts/add" element={<AddAccount />} />
           <Route path="accounts" element={<Accounts />} />
           <Route path="accounts/:id" element={<AccountDetails />} />
 
+          {/* Company & Profile */}
           <Route path="company" element={<Company />} />
           <Route path="profile" element={<Profile />} />
+
+          {/* Transactions */}
           <Route path="journal" element={<JournalEntries />} />
           <Route path="add-transaction" element={<TransactionInput />} />
           <Route path="ledgers" element={<Ledgers />} />
