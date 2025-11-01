@@ -6,54 +6,75 @@ const BalanceSheet = () => {
   const { journalEntries, selectedFinancialYear } = useAccountingStore();
 
   // Efficient grouping and calculations
-  const { groupedData, totals } = useMemo(() => {
-    const map: Record<string, Record<string, number>> = {};
-    const totals = {
-      "Equity": 0,
-      "Non-Current Liability": 0,
-      "Current Liability": 0,
-      "Non-Current Asset": 0,
-      "Current Asset": 0,
+const { groupedData, totals } = useMemo(() => {
+  const map: Record<string, Record<string, number>> = {};
+
+  // ✅ Use calculateTotals utility once
+  const calculated = calculateTotals(journalEntries);
+
+  for (const entry of journalEntries) {
+    const { debitAccount, creditAccount, amount } = entry;
+
+    // ✅ Helper function to process any account
+    const processAccount = (
+      account: {
+        accountName: string;
+        accountType?: string;
+        category: string;
+        subCategory: string;
+        financialStatement: string;
+      },
+      isDebit: boolean
+    ) => {
+      // Group by Equity or subCategory
+      const groupKey =
+        account.category === "Equity"
+          ? "Equity"
+          : account.subCategory ?? account.category;
+
+      const accName = account.accountName;
+      if (!map[groupKey]) map[groupKey] = {};
+
+      // Determine sign
+      let sign = 0;
+      if (account.category === "Asset") sign = isDebit ? 1 : -1;
+      else if (account.category === "Liability" || account.category === "Equity")
+        sign = isDebit ? -1 : 1;
+
+      // Update grouped map only (no totals here)
+      map[groupKey][accName] =
+        (map[groupKey][accName] || 0) + amount * sign;
     };
 
-    for (const entry of journalEntries) {
-      const { debitAccount, creditAccount, amount } = entry;
+    // Process both sides
+    processAccount(debitAccount, true);
+    processAccount(creditAccount, false);
+  }
 
-      // ✅ Helper function to process any account
-      const processAccount = (account: { accountName: string; accountType?: string; category: string; subCategory: string; financialStatement: string; }, isDebit: boolean) => {        
-        // Group by Equity or subCategory
-        const groupKey =
-          account.category === "Equity"
-            ? "Equity"
-            : account.subCategory ?? account.category;
+  // ✅ Build totals using calculated values
+  const totals = {
+    "Equity": calculated.totalEquity,
+    "Non-Current Liability": calculated.nonCurrentLiabilities,
+    "Current Liability": calculated.currentLiabilities,
+    "Non-Current Asset": calculated.nonCurrentAssets,
+    "Current Asset": calculated.currentAssets,
+    "Asset": calculated.assets,
+    "Liability": calculated.liabilities,
+  };
 
-        const accName = account.accountName;
-        if (!map[groupKey]) map[groupKey] = {};
+  // ✅ Add retained earnings to equity section
+  if (!map["Equity"]) map["Equity"] = {};
+  map["Equity"]["Retained Earnings"] =
+    (map["Equity"]["Retained Earnings"] || 0) + calculated.netIncome;
 
-        // Determine sign
-        let sign = 0;
-        if (account.category === "Asset") sign = isDebit ? 1 : -1;
-        else if (account.category === "Liability" || account.category === "Equity")
-          sign = isDebit ? -1 : 1;
+  // ✅ Add accumulated oci to equity section
+  if (!map["Equity"]) map["Equity"] = {};
+  map["Equity"]["Accumulated OCI"] =
+    (map["Equity"]["Accumulated OCI"] || 0) + calculated.oci;
 
-        // Update maps and totals
-        map[groupKey][accName] = (map[groupKey][accName] || 0) + amount * sign;
-        totals[groupKey as keyof typeof totals] = (totals[groupKey as keyof typeof totals] || 0) + amount * sign;
-      };
+  return { groupedData: map, totals };
+}, [journalEntries]);
 
-      // Process both sides
-      processAccount(debitAccount, true);
-      processAccount(creditAccount, false);
-    }
-
-    // net income
-    const netIncome = calculateTotals(journalEntries).netIncome;
-    totals["Equity"] += netIncome;
-    if (!map["Equity"]) map["Equity"] = {};
-    map["Equity"]["Retained Earnings"] = (map["Equity"]["Retained Earnings"] || 0) + netIncome;
-
-    return { groupedData: map, totals };
-  }, [journalEntries]);
 
   const sumSubCategory = (obj: Record<string, number>) =>
     Object.values(obj).reduce((a, b) => a + b, 0);
@@ -82,11 +103,10 @@ const BalanceSheet = () => {
   const totalEquity = totals["Equity"];
   const totalNonCurrentLiabilities = totals["Non-Current Liability"];
   const totalCurrentLiabilities = totals["Current Liability"];
-  const totalNonCurrentAssets = totals["Non-Current Asset"];
-  const totalCurrentAssets = totals["Current Asset"];
+  const totalAssets = totals["Asset"];
+  const totalLiabilties = totalNonCurrentLiabilities + totalCurrentLiabilities;
 
-  const totalLiabilitiesEquity = totalEquity + totalNonCurrentLiabilities + totalCurrentLiabilities;
-  const totalAssets = totalNonCurrentAssets + totalCurrentAssets;
+  const totalLiabilitiesEquity = totalEquity + totalLiabilties;
   const isBalanced = Math.abs(totalLiabilitiesEquity - totalAssets) < 1;
 
   // Return JSX

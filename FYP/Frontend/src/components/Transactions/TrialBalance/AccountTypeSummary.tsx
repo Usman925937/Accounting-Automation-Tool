@@ -1,16 +1,14 @@
-import React from 'react';
+import { useMemo } from 'react';
+import useAccountingStore from '../../../store/accountingStore';
+import { calculateTotals } from '../../../utils/CalculateTotals';
 
-interface AccountTypeSummaryProps {
-  totals: {
-    assets: number;
-    liabilities: number;
-    equity: number;
-    revenue: number;
-    expenses: number;
-  };
-}
+const AccountTypeSummary = () => {
+  const { journalEntries } = useAccountingStore();
+  const { totals } = useMemo(() => {
+    const totals = calculateTotals(journalEntries);
+    return { totals };
+  }, [journalEntries])
 
-const AccountTypeSummary: React.FC<AccountTypeSummaryProps> = ({ totals }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mt-8">
       <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
@@ -30,7 +28,7 @@ const AccountTypeSummary: React.FC<AccountTypeSummaryProps> = ({ totals }) => {
       <div className="bg-indigo-50 rounded-lg p-4 border border-indigo-200">
         <h3 className="font-medium text-indigo-900 mb-2">Equity</h3>
         <p className="text-2xl font-bold text-indigo-700">
-          PKR {totals.equity.toLocaleString()}
+          PKR {totals.totalEquity.toLocaleString()}
         </p>
       </div>
       

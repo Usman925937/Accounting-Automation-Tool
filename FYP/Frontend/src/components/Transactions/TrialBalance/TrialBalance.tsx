@@ -50,38 +50,7 @@ const TrialBalance: React.FC = () => {
     return trialBalanceData;
   };
 
-  // Calculate totals by account type
-  const getTotalsByType = () => {
-    const trialBalanceData = getTrialBalance();
-    const totals = {
-      assets: 0,
-      liabilities: 0,
-      equity: 0,
-      revenue: 0,
-      expenses: 0
-    };
-
-    trialBalanceData.forEach(item => {
-      const netAmount = item.debit > 0 ? item.debit : item.credit;
-      
-      if (item.category === 'Asset') {
-        totals.assets += netAmount;
-      } else if (item.category === 'Liability') {
-        totals.liabilities += netAmount;
-      } else if (item.category === 'Equity') {
-        totals.equity += netAmount;
-      } else if (item.category === 'Revenue') {
-        totals.revenue += netAmount;
-      } else if (item.category === 'Expense') {
-        totals.expenses += netAmount;
-      }
-    });
-
-    return totals;
-  };
-
   const trialBalanceData = getTrialBalance();
-  const totals = getTotalsByType();
 
   const totalDebits = trialBalanceData.reduce((sum, item) => sum + item.debit, 0);
   const totalCredits = trialBalanceData.reduce((sum, item) => sum + item.credit, 0);
@@ -144,7 +113,7 @@ const TrialBalance: React.FC = () => {
         totalCredits={totalCredits}
       />
 
-      <AccountTypeSummary totals={totals} />
+      <AccountTypeSummary />
 
       {/* IFRS Compliance Note */}
       <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">

@@ -64,10 +64,6 @@ const ProfitLossStatement = () => {
     return { groupedData: map, totals };
   }, [journalEntries]);
 
-  // Helper to sum totals within a subcategory
-  const sumSubCategory = (obj: Record<string, number>) =>
-    Object.values(obj).reduce((a, b) => a + b, 0);
-
   // Stepwise calculations
   const netRevenue = totals.Revenue - totals.ContraRevenue;
   const grossProfit = netRevenue - totals.COGS;

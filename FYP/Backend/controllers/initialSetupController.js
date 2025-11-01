@@ -18,7 +18,8 @@ exports.initialSetup = async (req, res) => {
     })
         .populate('createdBy', 'name email')
         .populate('debitAccount')
-        .populate('creditAccount');
+        .populate('creditAccount')
+        .sort({ date: -1, createdAt: -1 });
 
     res.status(200).json({
         message: "App started successfully",
