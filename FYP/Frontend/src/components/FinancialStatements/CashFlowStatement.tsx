@@ -6,7 +6,9 @@ const CashFlowStatement = () => {
   const { journalEntries, selectedFinancialYear } = useAccountingStore();
 
   const {
-    netIncome,
+    operatingActivities,
+    investingActivities,
+    financingActivities,
     cashFromOperating,
     cashFromInvesting,
     cashFromFinancing,
@@ -14,56 +16,83 @@ const CashFlowStatement = () => {
   } = useMemo(() => {
     const calculated = calculateTotals(journalEntries);
 
-    let cashFromOperating = 0;
-    let cashFromInvesting = 0;
-    let cashFromFinancing = 0;
+    const operatingActivities: Record<string, number> = {};
+    const investingActivities: Record<string, number> = {};
+    const financingActivities: Record<string, number> = {};
 
-    // 🔹 Detect cash transactions dynamically
+    const addToGroup = (
+      group: Record<string, number>,
+      accountName: string,
+      amount: number
+    ) => {
+      group[accountName] = (group[accountName] || 0) + amount;
+    };
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const classifyActivity = (acct: any, sub?: string) => {
+      const subcat = (sub || acct.subCategory || "").toLowerCase();
+      const cat = (acct.category || "").toLowerCase();
+      if (cat === "revenue" || cat === "expense" || subcat.includes("revenue") || subcat.includes("expense")) {
+        return "operating";
+      }
+      if (cat === "asset" || subcat.includes("asset") || subcat.includes("equipment") || subcat.includes("investment")) {
+        return "investing";
+      }
+      if (cat === "equity" || cat === "liability" || subcat.includes("loan") || subcat.includes("capital") || subcat.includes("equity")) {
+        return "financing";
+      }
+      return null;
+    };
+
     for (const entry of journalEntries) {
       const { debitAccount, creditAccount, amount } = entry;
 
-      const involvesCash =
-        debitAccount.accountName.toLowerCase().includes("cash") ||
-        creditAccount.accountName.toLowerCase().includes("cash");
+      const debitIsCash = debitAccount.accountName.toLowerCase().includes("cash");
+      const creditIsCash = creditAccount.accountName.toLowerCase().includes("cash");
 
-      if (!involvesCash) continue;
+      // only care transactions that move cash
+      if (!debitIsCash && !creditIsCash) continue;
 
-      // Simple categorization based on subcategory
-      const type =
-        debitAccount.subCategory || creditAccount.subCategory || "";
+      // Determine the 'other' account (non-cash account) and activity classification
+      const otherAccount = debitIsCash ? creditAccount : debitAccount;
+      const activity = classifyActivity(otherAccount, otherAccount.subCategory || "");
 
-      if (
-        type.includes("Revenue") ||
-        type.includes("Expense") ||
-        debitAccount.category === "Expense" ||
-        creditAccount.category === "Expense"
-      ) {
-        cashFromOperating +=
-          debitAccount.accountName.toLowerCase().includes("cash")
-            ? -amount
-            : amount;
-      } else if (
-        type.includes("Investment") ||
-        debitAccount.category === "Asset" ||
-        creditAccount.category === "Asset"
-      ) {
-        cashFromInvesting +=
-          debitAccount.accountName.toLowerCase().includes("cash")
-            ? -amount
-            : amount;
-      } else if (debitAccount.category === "Equity" || creditAccount.category === "Equity" || debitAccount.category === "Liability" || creditAccount.category === "Liability") {
-        cashFromFinancing +=
-          debitAccount.accountName.toLowerCase().includes("cash")
-            ? -amount
-            : amount;
+      const cashSign = debitIsCash ? +1 : -1;
+      const amt = cashSign * amount;
+
+      if (activity === "operating") {
+        addToGroup(operatingActivities, otherAccount.accountName, amt);
+      } else if (activity === "investing") {
+        addToGroup(investingActivities, otherAccount.accountName, amt);
+      } else if (activity === "financing") {
+        addToGroup(financingActivities, otherAccount.accountName, amt);
+      } else {
+        // fallback: if unknown, try to guess by categories
+        if ((otherAccount.category || "").toLowerCase() === "asset") {
+          addToGroup(investingActivities, otherAccount.accountName, amt);
+        } else if (
+          (otherAccount.category || "").toLowerCase() === "liability" ||
+          (otherAccount.category || "").toLowerCase() === "equity"
+        ) {
+          addToGroup(financingActivities, otherAccount.accountName, amt);
+        } else {
+          // if still unknown, put in operating by default (more conservative)
+          addToGroup(operatingActivities, otherAccount.accountName, amt);
+        }
       }
     }
 
-    const netChangeInCash =
-      cashFromOperating + cashFromInvesting + cashFromFinancing;
+    const cashFromOperating = Object.values(operatingActivities).reduce((a, b) => a + b, 0);
+    const cashFromInvesting = Object.values(investingActivities).reduce((a, b) => a + b, 0);
+    const cashFromFinancing = Object.values(financingActivities).reduce((a, b) => a + b, 0);
+
+    const netChangeInCash = cashFromOperating + cashFromInvesting + cashFromFinancing;
 
     return {
       netIncome: calculated.netIncome || 0,
+      operatingActivities,
+      investingActivities,
+      financingActivities,
       cashFromOperating,
       cashFromInvesting,
       cashFromFinancing,
@@ -71,87 +100,77 @@ const CashFlowStatement = () => {
     };
   }, [journalEntries]);
 
+  const colorMap = {
+    operating: { heading: "text-blue-700", border: "border-blue-200" },
+    investing: { heading: "text-green-700", border: "border-green-200" },
+    financing: { heading: "text-purple-700", border: "border-purple-200" },
+  };
+
+  const formatAmt = (n: number) =>
+    n < 0 ? `PKR (${Math.abs(n).toLocaleString()})` : `PKR ${n.toLocaleString()}`;
+
+  const renderSection = (
+    title: string,
+    data: Record<string, number>,
+    total: number,
+    kind: "operating" | "investing" | "financing"
+  ) => {
+    const clr = colorMap[kind];
+    return (
+      <div>
+        <h4 className={`text-lg font-semibold ${clr.heading} mb-4 pb-2 ${clr.border}`}>
+          {title}
+        </h4>
+
+        <div className="space-y-2">
+          {Object.keys(data).length === 0 ? (
+            <p className="text-gray-500">No transactions recorded</p>
+          ) : (
+            Object.entries(data).map(([name, amt]) => (
+              <div key={name} className="flex justify-between items-center py-1 text-gray-700">
+                <span>{name}</span>
+                <span>{amt < 0 ? `(${Math.abs(amt).toLocaleString()})` : amt.toLocaleString()}</span>
+              </div>
+            ))
+          )}
+
+          <div className="flex justify-between items-center border-t border-gray-200 font-bold pt-2 mt-2">
+            <span className={clr.heading}>
+              {kind === "operating"
+                ? "Net Cash from Operating Activities"
+                : kind === "investing"
+                ? "Net Cash from Investing Activities"
+                : "Net Cash from Financing Activities"}
+            </span>
+            <span className={clr.heading}>{formatAmt(total)}</span>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-6">
       <h2 className="text-xl font-bold text-gray-900">Statement of Cash Flows</h2>
 
       <div className="bg-white rounded-lg p-6">
         <div className="text-center mb-6">
-          <h3 className="text-lg font-bold text-gray-900">
-            Statement of Cash Flows
-          </h3>
+          <h3 className="text-lg font-bold text-gray-900">Statement of Cash Flows</h3>
           <p className="text-gray-600">
             For the year ended{" "}
-            {selectedFinancialYear?.endDate.slice(0, 10) ??
-              new Date().toLocaleDateString("en-GB")}
+            {selectedFinancialYear?.endDate?.slice(0, 10) ?? new Date().toLocaleDateString("en-GB")}
           </p>
         </div>
 
         <div className="space-y-6">
-          {/* OPERATING ACTIVITIES */}
-          <div>
-            <h4 className="text-lg font-semibold text-blue-700 mb-4 pb-2 border-b-2 border-blue-200">
-              CASH FLOWS FROM OPERATING ACTIVITIES
-            </h4>
-            <div className="space-y-3">
-              <div className="flex justify-between items-center py-2">
-                <span className="text-gray-700">Net Income</span>
-                <span className="font-medium">
-                  PKR {netIncome.toLocaleString()}
-                </span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-t border-gray-200 font-bold">
-                <span className="text-blue-700">
-                  Net Cash from Operating Activities
-                </span>
-                <span className="text-blue-700">
-                  PKR {cashFromOperating.toLocaleString()}
-                </span>
-              </div>
-            </div>
-          </div>
+          {renderSection("CASH FLOWS FROM OPERATING ACTIVITIES", operatingActivities, cashFromOperating, "operating")}
+          {renderSection("CASH FLOWS FROM INVESTING ACTIVITIES", investingActivities, cashFromInvesting, "investing")}
+          {renderSection("CASH FLOWS FROM FINANCING ACTIVITIES", financingActivities, cashFromFinancing, "financing")}
 
-          {/* INVESTING ACTIVITIES */}
-          <div>
-            <h4 className="text-lg font-semibold text-green-700 mb-4 pb-2 border-b-2 border-green-200">
-              CASH FLOWS FROM INVESTING ACTIVITIES
-            </h4>
-            <div className="flex justify-between items-center py-2">
-              <span className="text-gray-700">
-                {cashFromInvesting === 0
-                  ? "No investing activities recorded"
-                  : "Net Cash Used in Investing"}
-              </span>
-              <span className="font-medium">
-                PKR {cashFromInvesting.toLocaleString()}
-              </span>
-            </div>
-          </div>
-
-          {/* FINANCING ACTIVITIES */}
-          <div>
-            <h4 className="text-lg font-semibold text-purple-700 mb-4 pb-2 border-b-2 border-purple-200">
-              CASH FLOWS FROM FINANCING ACTIVITIES
-            </h4>
-            <div className="flex justify-between items-center py-2">
-              <span className="text-gray-700">
-                {cashFromFinancing === 0
-                  ? "No financing activities recorded"
-                  : "Net Cash from Financing"}
-              </span>
-              <span className="font-medium">
-                PKR {cashFromFinancing.toLocaleString()}
-              </span>
-            </div>
-          </div>
-
-          {/* NET CHANGE IN CASH */}
           <div className="bg-gray-50 p-4 rounded-lg">
             <div className="flex justify-between items-center font-bold text-lg">
               <span className="text-gray-900">Net Change in Cash</span>
-              <span className="text-gray-900">
-                PKR {netChangeInCash.toLocaleString()}
-              </span>
+              <span className="text-gray-900">{formatAmt(netChangeInCash)}</span>
             </div>
           </div>
         </div>
