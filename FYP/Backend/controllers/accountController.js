@@ -212,3 +212,29 @@ exports.deleteAllAccounts = async (req, res) => {
     });
   }
 };
+
+exports.updateAllAccounts = async (req, res) => {
+  try {
+    for (const defaultAcc of defaultAccounts) {
+      const existing = await Account.findOne({
+        accountName: { $regex: new RegExp(`^${defaultAcc.accountName}$`, "i") },
+      });
+
+      if (existing) {
+        // Update only relevant fields, not balances or company reference
+        existing.subCategory = defaultAcc.subCategory;
+        existing.financialStatement = defaultAcc.financialStatement || existing.financialStatement;
+        existing.cashFlowSection = defaultAcc.cashFlowSection || "NA";
+
+        await existing.save();
+
+      } else {
+        console.log(`⚠️ Skipping: ${defaultAcc.accountName} (not found)`);
+      }
+    }
+
+    console.log(`Updated existing accounts successfully.`);
+  } catch (err) {
+    console.error("❌ Error updating accounts:", err);
+  }
+}

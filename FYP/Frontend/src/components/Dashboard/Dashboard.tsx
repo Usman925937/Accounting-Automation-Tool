@@ -6,11 +6,10 @@ import { calculateTotals } from '../../utils/CalculateTotals';
 const Dashboard: React.FC = () => {
   const { journalEntries } = useAccountingStore();
   
-  const { totals, comprehensiveIncome, totalEquity, stats } = useMemo(() => {
+  const { totals, totalEquity, stats, netIncome } = useMemo(() => {
     const totals = calculateTotals(journalEntries);
   
   const netIncome = totals.netIncome;
-  const comprehensiveIncome = totals.oci + netIncome;
   const totalEquity = totals.totalEquity;
 
   const stats = [
@@ -18,33 +17,29 @@ const Dashboard: React.FC = () => {
       name: 'Total Assets',
       value: `PKR ${totals.assets.toLocaleString()}`,
       icon: TrendingUp,
-      change: '+12.5%',
       changeType: 'positive',
     },
     {
       name: 'Total Liabilities',
       value: `PKR ${totals.liabilities.toLocaleString()}`,
       icon: TrendingDown,
-      change: '-2.3%',
       changeType: 'negative',
     },
     {
       name: 'Net Income',
       value: `PKR ${netIncome.toLocaleString()}`,
       icon: DollarSign,
-      change: '+18.7%',
       changeType: 'positive',
     },
     {
       name: 'Total Transactions',
       value: journalEntries.length.toString(),
       icon: BarChart3,
-      change: '+5 today',
       changeType: 'neutral',
     },
   ];
 
-  return { totals, comprehensiveIncome, totalEquity, stats };
+  return { totals, totalEquity, stats, netIncome };
     
   }, [journalEntries]);
 
@@ -85,14 +80,6 @@ const Dashboard: React.FC = () => {
                       <dt className="text-sm font-semibold text-gray-500 truncate uppercase tracking-wide">{item.name}</dt>
                       <dd className="text-2xl font-bold text-gray-900 mt-1">{item.value}</dd>
                     </dl>
-                  </div>
-                </div>
-                <div className="mt-4 flex items-center">
-                  <div className={`text-sm font-medium px-2 py-1 rounded-full ${
-                    item.changeType === 'positive' ? 'text-green-600' : 
-                    item.changeType === 'negative' ? 'text-red-600' : 'text-gray-500'
-                  }`}>
-                    {item.change}
                   </div>
                 </div>
               </div>
@@ -139,19 +126,19 @@ const Dashboard: React.FC = () => {
           </h2>
           <div className="space-y-3">
             <div className="flex justify-between items-center py-3 border-b border-gray-100">
-              <span className="text-sm font-semibold text-gray-600">Total Revenue</span>
+              <span className="text-sm font-semibold text-gray-600">Revenue</span>
               <span className="text-lg font-bold text-green-600">PKR {totals.revenue.toLocaleString()}</span>
             </div>
             <div className="flex justify-between items-center py-3 border-b border-gray-100">
-              <span className="text-sm font-semibold text-gray-600">Total Expenses</span>
+              <span className="text-sm font-semibold text-gray-600">Expenses</span>
               <span className="text-lg font-bold text-red-600">PKR {totals.expenses.toLocaleString()}</span>
             </div>
             <div className={`flex justify-between items-center py-3 px-4 rounded-xl mt-4 ${
-              comprehensiveIncome >= 0 ? 'bg-gradient-to-r from-green-50 to-emerald-50' : 'bg-gradient-to-r from-red-50 to-pink-50'
+              netIncome >= 0 ? 'bg-gradient-to-r from-green-50 to-emerald-50' : 'bg-gradient-to-r from-red-50 to-pink-50'
             }`}>
-              <span className={`text-sm font-bold ${comprehensiveIncome >= 0 ? 'text-green-900' : 'text-red-900'}`}>Total Comprehensive Income</span>
-              <span className={`text-sm font-bold ${comprehensiveIncome >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                PKR {comprehensiveIncome.toLocaleString()}
+              <span className={`text-sm font-bold ${netIncome >= 0 ? 'text-green-900' : 'text-red-900'}`}>Net Income</span>
+              <span className={`text-sm font-bold ${netIncome >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                PKR {netIncome.toLocaleString()}
               </span>
             </div>
           </div>

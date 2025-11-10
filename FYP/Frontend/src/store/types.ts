@@ -3,11 +3,12 @@
 export type Account = {
     _id: string,
     accountName: string,
-    accountType: 'debit' | 'credit',
+    accountType: string,
     balance: number,
     category: string,
     subCategory: string,
     financialStatement: string,
+    cashFlowSection: string,
     yearlyBalances: [{ financialYear: string, openingBalance: number, closingBalance: number }]
 };
 

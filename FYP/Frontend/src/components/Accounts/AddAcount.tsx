@@ -16,7 +16,8 @@ const AddAccount = () => {
         accountType: 'debit',
         financialStatement: 'Balance Sheet',
         category: '',
-        subCategory: ''
+        subCategory: '',
+        cashFlowSection: 'NA'
     });
     const [loading, setLoading] = useState(false);
 
@@ -29,8 +30,8 @@ const AddAccount = () => {
             setAccounts(res.data.accounts);
 
             addAlert('Account added successfully', 'success');
-            setAccount({ accountName: '', accountType: 'debit', financialStatement: 'Balance Sheet', category: '', subCategory: '' });
-        
+            setAccount({ accountName: '', accountType: 'debit', financialStatement: 'Balance Sheet', category: '', subCategory: '', cashFlowSection: 'NA' });
+
         } catch {
             addAlert('Failed to add account', 'error');
         } finally {
@@ -41,7 +42,7 @@ const AddAccount = () => {
     // return
     if (loading)
         return <Spinner />;
-    
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-8">
             <div className="relative max-w-2xl mx-auto bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-8">
@@ -83,7 +84,7 @@ const AddAccount = () => {
                                 <option>Balance Sheet</option>
                                 <option>Income Statement</option>
                                 <option>Comprehensive Income</option>
-                                <option>Owner's Equity</option>
+                                <option>Statement of Changes in Equity</option>
                             </select>
                         </div>
                     </div>
@@ -91,12 +92,17 @@ const AddAccount = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label className="block font-semibold text-gray-700 mb-2">Category</label>
-                            <input
-                                type="text"
+                            <select
                                 value={account.category}
                                 onChange={(e) => setAccount({ ...account, category: e.target.value })}
                                 className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl"
-                            />
+                            >
+                                <option>Asset</option>
+                                <option>Liability</option>
+                                <option>Equity</option>
+                                <option>Revenue</option>
+                                <option>Expense</option>
+                            </select>
                         </div>
                         <div>
                             <label className="block font-semibold text-gray-700 mb-2">Subcategory</label>
@@ -106,6 +112,19 @@ const AddAccount = () => {
                                 onChange={(e) => setAccount({ ...account, subCategory: e.target.value })}
                                 className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl"
                             />
+                        </div>
+                        <div>
+                            <label className="block font-semibold text-gray-700 mb-2">Cash Flow Section</label>
+                            <select
+                                value={account.cashFlowSection}
+                                onChange={(e) => setAccount({ ...account, cashFlowSection: e.target.value })}
+                                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl"
+                            >
+                                <option>Investing</option>
+                                <option>Financing</option>
+                                <option>Operating</option>
+                                <option>NA</option>
+                            </select>
                         </div>
                     </div>
 

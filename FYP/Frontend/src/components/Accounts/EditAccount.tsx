@@ -7,13 +7,14 @@ import Spinner from '../Layout/Spinner';
 import useAuthStore from '../../store/authStore';
 import NotFound from '../Layout/NotFound';
 import useAccountingStore from '../../store/accountingStore';
+import type { Account } from '../../store/types';
 
 const EditAccount = () => {
     const { accountId } = useParams();
     const { user } = useAuthStore();
     const { setAccounts } = useAccountingStore();
 
-    const [account, setAccount] = useState<any>(null);
+    const [account, setAccount] = useState<Account | null>(null);
     const [loading, setLoading] = useState(true);
     const { addAlert } = useAlertStore();
     const nav = useNavigate();
@@ -96,7 +97,7 @@ const EditAccount = () => {
                                 <option>Balance Sheet</option>
                                 <option>Income Statement</option>
                                 <option>Comprehensive Income</option>
-                                <option>Owner's Equity</option>
+                                <option>Statement of Changes in Equity</option>
                             </select>
                         </div>
                     </div>
@@ -104,12 +105,17 @@ const EditAccount = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label className="block font-semibold text-gray-700 mb-2">Category</label>
-                            <input
-                                type="text"
+                            <select
                                 value={account.category}
                                 onChange={(e) => setAccount({ ...account, category: e.target.value })}
                                 className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl"
-                            />
+                            >
+                                <option>Asset</option>
+                                <option>Liability</option>
+                                <option>Equity</option>
+                                <option>Revenue</option>
+                                <option>Expense</option>
+                            </select>
                         </div>
                         <div>
                             <label className="block font-semibold text-gray-700 mb-2">Subcategory</label>
@@ -119,6 +125,20 @@ const EditAccount = () => {
                                 onChange={(e) => setAccount({ ...account, subCategory: e.target.value })}
                                 className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl"
                             />
+                        </div>
+
+                        <div>
+                            <label className="block font-semibold text-gray-700 mb-2">Cash Flow Section</label>
+                            <select
+                                value={account.cashFlowSection}
+                                onChange={(e) => setAccount({ ...account, cashFlowSection: e.target.value })}
+                                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl"
+                            >
+                                <option>Investing</option>
+                                <option>Financing</option>
+                                <option>Operating</option>
+                                <option>NA</option>
+                            </select>
                         </div>
                     </div>
 

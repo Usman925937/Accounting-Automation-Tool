@@ -28,9 +28,18 @@ const CashFlowStatement = () => {
       group[accountName] = (group[accountName] || 0) + amount;
     };
 
+    // ✅ Use the cashFlowSection property directly (if available)
+    // Possible values: "Operating", "Investing", "Financing", "None"
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const classifyActivity = (acct: any, sub?: string) => {
-      const subcat = (sub || acct.subCategory || "").toLowerCase();
+    const classifyActivity = (acct: any): "operating" | "investing" | "financing" | null => {
+      const section = (acct.cashFlowSection || "").toLowerCase();
+
+      if (section === "operating") return "operating";
+      if (section === "investing") return "investing";
+      if (section === "financing") return "financing";
+
+      // fallback for backward compatibility
+      const subcat = (acct.subCategory || "").toLowerCase();
       const cat = (acct.category || "").toLowerCase();
       if (cat === "revenue" || cat === "expense" || subcat.includes("revenue") || subcat.includes("expense")) {
         return "operating";
@@ -50,16 +59,17 @@ const CashFlowStatement = () => {
       const debitIsCash = debitAccount.accountName.toLowerCase().includes("cash");
       const creditIsCash = creditAccount.accountName.toLowerCase().includes("cash");
 
-      // only care transactions that move cash
+      // only process cash transactions
       if (!debitIsCash && !creditIsCash) continue;
 
-      // Determine the 'other' account (non-cash account) and activity classification
+      // determine non-cash side
       const otherAccount = debitIsCash ? creditAccount : debitAccount;
-      const activity = classifyActivity(otherAccount, otherAccount.subCategory || "");
+      const activity = classifyActivity(otherAccount);
 
       const cashSign = debitIsCash ? +1 : -1;
       const amt = cashSign * amount;
 
+      // ✅ route based on cashFlowSection classification
       if (activity === "operating") {
         addToGroup(operatingActivities, otherAccount.accountName, amt);
       } else if (activity === "investing") {
@@ -67,18 +77,8 @@ const CashFlowStatement = () => {
       } else if (activity === "financing") {
         addToGroup(financingActivities, otherAccount.accountName, amt);
       } else {
-        // fallback: if unknown, try to guess by categories
-        if ((otherAccount.category || "").toLowerCase() === "asset") {
-          addToGroup(investingActivities, otherAccount.accountName, amt);
-        } else if (
-          (otherAccount.category || "").toLowerCase() === "liability" ||
-          (otherAccount.category || "").toLowerCase() === "equity"
-        ) {
-          addToGroup(financingActivities, otherAccount.accountName, amt);
-        } else {
-          // if still unknown, put in operating by default (more conservative)
-          addToGroup(operatingActivities, otherAccount.accountName, amt);
-        }
+        // default fallback to operating if undefined
+        addToGroup(operatingActivities, otherAccount.accountName, amt);
       }
     }
 
@@ -158,7 +158,8 @@ const CashFlowStatement = () => {
           <h3 className="text-lg font-bold text-gray-900">Statement of Cash Flows</h3>
           <p className="text-gray-600">
             For the year ended{" "}
-            {selectedFinancialYear?.endDate?.slice(0, 10) ?? new Date().toLocaleDateString("en-GB")}
+            {selectedFinancialYear?.endDate?.slice(0, 10) ??
+              new Date().toLocaleDateString("en-GB")}
           </p>
         </div>
 

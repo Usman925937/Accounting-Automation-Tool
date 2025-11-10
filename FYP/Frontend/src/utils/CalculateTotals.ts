@@ -26,8 +26,8 @@ export const calculateTotals = (entries: JournalEntry[]) => {
         if (debitAccount.category === 'Revenue' && debitAccount.financialStatement === 'Income Statement') totals.netIncome -= amount;
         if (debitAccount.category === 'Expense' && debitAccount.financialStatement === 'Income Statement') totals.netIncome -= amount;
         
-        if (debitAccount.category === 'Revenue') totals.revenue -= amount;
-        if (debitAccount.category === 'Expense') totals.expenses += amount;
+        if (debitAccount.category === 'Revenue' && debitAccount.financialStatement === 'Income Statement') totals.revenue -= amount;
+        if (debitAccount.category === 'Expense' && debitAccount.financialStatement === 'Income Statement') totals.expenses += amount;
         
         // Credit side impact
         if (creditAccount.category === 'Asset') totals.assets -= amount;
@@ -36,8 +36,8 @@ export const calculateTotals = (entries: JournalEntry[]) => {
         
         if (creditAccount.category === 'Revenue' && creditAccount.financialStatement === 'Income Statement') totals.netIncome += amount;
     
-        if (creditAccount.category === 'Revenue') totals.revenue += amount;
-        if (creditAccount.category === 'Expense') totals.expenses -= amount;
+        if (creditAccount.category === 'Revenue' && creditAccount.financialStatement === 'Income Statement') totals.revenue += amount;
+        if (creditAccount.category === 'Expense' && creditAccount.financialStatement === 'Income Statement') totals.expenses -= amount;
         
         // current and non-current
         // debit side

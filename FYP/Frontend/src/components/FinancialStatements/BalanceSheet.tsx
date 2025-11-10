@@ -6,81 +6,81 @@ const BalanceSheet = () => {
   const { journalEntries, selectedFinancialYear } = useAccountingStore();
 
   // Efficient grouping and calculations
-const { groupedData, totals } = useMemo(() => {
-  const map: Record<string, Record<string, number>> = {};
+  const { groupedData, totals } = useMemo(() => {
+    const map: Record<string, Record<string, number>> = {};
 
-  // ✅ Use calculateTotals utility once
-  const calculated = calculateTotals(journalEntries);
+    // ✅ Use calculateTotals utility once
+    const calculated = calculateTotals(journalEntries);
 
-  for (const entry of journalEntries) {
-    const { debitAccount, creditAccount, amount } = entry;
+    for (const entry of journalEntries) {
+      const { debitAccount, creditAccount, amount } = entry;
 
-    // ✅ Helper function to process any account
-    const processAccount = (
-      account: {
-        accountName: string;
-        accountType?: string;
-        category: string;
-        subCategory: string;
-        financialStatement: string;
-      },
-      isDebit: boolean
-    ) => {
-      // Group by Equity or subCategory
-      const groupKey =
-        account.category === "Equity"
-          ? "Equity"
-          : account.subCategory ?? account.category;
+      // ✅ Helper function to process any account
+      const processAccount = (
+        account: {
+          accountName: string;
+          accountType?: string;
+          category: string;
+          subCategory: string;
+          financialStatement: string;
+        },
+        isDebit: boolean
+      ) => {
+        // Group by Equity or subCategory
+        const groupKey =
+          account.category === "Equity"
+            ? "Equity"
+            : account.subCategory ?? account.category;
 
-      const accName = account.accountName;
-      if (!map[groupKey]) map[groupKey] = {};
+        const accName = account.accountName;
+        if (!map[groupKey]) map[groupKey] = {};
 
-      // Determine sign
-      let sign = 0;
-      if (account.category === "Asset") sign = isDebit ? 1 : -1;
-      else if (account.category === "Liability" || account.category === "Equity")
-        sign = isDebit ? -1 : 1;
+        // Determine sign
+        let sign = 0;
+        if (account.category === "Asset") sign = isDebit ? 1 : -1;
+        else if (account.category === "Liability" || account.category === "Equity")
+          sign = isDebit ? -1 : 1;
 
-      // Update grouped map only (no totals here)
-      map[groupKey][accName] =
-        (map[groupKey][accName] || 0) + amount * sign;
+        // Update grouped map only (no totals here)
+        map[groupKey][accName] =
+          (map[groupKey][accName] || 0) + amount * sign;
+      };
+
+      // Process both sides
+      processAccount(debitAccount, true);
+      processAccount(creditAccount, false);
+    }
+
+    // ✅ Build totals using calculated values
+    const totals = {
+      "Equity": calculated.totalEquity,
+      "Non-Current Liability": calculated.nonCurrentLiabilities,
+      "Current Liability": calculated.currentLiabilities,
+      "Non-Current Asset": calculated.nonCurrentAssets,
+      "Current Asset": calculated.currentAssets,
+      "Asset": calculated.assets,
+      "Liability": calculated.liabilities,
     };
 
-    // Process both sides
-    processAccount(debitAccount, true);
-    processAccount(creditAccount, false);
-  }
+    // ✅ Add retained earnings to equity section
+    if (!map["Equity"]) map["Equity"] = {};
+    map["Equity"]["Retained Earnings"] =
+      (map["Equity"]["Retained Earnings"] || 0) + calculated.netIncome;
 
-  // ✅ Build totals using calculated values
-  const totals = {
-    "Equity": calculated.totalEquity,
-    "Non-Current Liability": calculated.nonCurrentLiabilities,
-    "Current Liability": calculated.currentLiabilities,
-    "Non-Current Asset": calculated.nonCurrentAssets,
-    "Current Asset": calculated.currentAssets,
-    "Asset": calculated.assets,
-    "Liability": calculated.liabilities,
-  };
+    // ✅ Add accumulated oci to equity section
+    if (!map["Equity"]) map["Equity"] = {};
+    map["Equity"]["Accumulated OCI"] =
+      (map["Equity"]["Accumulated OCI"] || 0) + calculated.oci;
 
-  // ✅ Add retained earnings to equity section
-  if (!map["Equity"]) map["Equity"] = {};
-  map["Equity"]["Retained Earnings"] =
-    (map["Equity"]["Retained Earnings"] || 0) + calculated.netIncome;
-
-  // ✅ Add accumulated oci to equity section
-  if (!map["Equity"]) map["Equity"] = {};
-  map["Equity"]["Accumulated OCI"] =
-    (map["Equity"]["Accumulated OCI"] || 0) + calculated.oci;
-
-  return { groupedData: map, totals };
-}, [journalEntries]);
+    return { groupedData: map, totals };
+  }, [journalEntries]);
 
 
   const sumSubCategory = (obj: Record<string, number>) =>
     Object.values(obj).reduce((a, b) => a + b, 0);
 
   // Helper: render grouped accounts under each section
-  const renderSection = (subCategory: string) => {
+  const renderSection = (title: string, subCategory: string) => {
     const accounts = groupedData[subCategory];
     if (!accounts) return null;
     return (
@@ -92,7 +92,7 @@ const { groupedData, totals } = useMemo(() => {
           </div>
         ))}
         <div className="flex justify-between items-center py-2 border-t border-gray-200 font-semibold text-gray-800 mt-1">
-          <span className="font-bold">Total</span>
+          <span className="font-bold">Total {title}</span>
           <span className="font-bold">PKR {sumSubCategory(accounts).toLocaleString()}</span>
         </div>
       </div>
@@ -144,65 +144,127 @@ const { groupedData, totals } = useMemo(() => {
           </p>
         </div>
 
-        {/* SINGLE COLUMN VIEW */}
-        <div>
-          <h4 className="text-lg font-semibold text-purple-700 mb-4 border-b-2 border-purple-200">
-            EQUITY
-          </h4>
-          {renderSection("Equity")}
+        {/* === LIABILITIES AND EQUITY SECTION === */}
+        <h3 className="text-xl font-bold text-gray-900 mb-4 border-b-2 border-gray-300">
+          LIABILITIES AND EQUITY
+        </h3>
 
-          <h4 className="text-lg font-semibold text-red-700 mb-4 border-b-2 border-red-200">
-            NON-CURRENT LIABILITIES
-          </h4>
-          {renderSection("Non-Current Liability")}
+        {/* --- EQUITY --- */}
+        <h4 className="text-lg font-semibold text-purple-700 mb-3 border-b border-purple-200">
+          Owner's Equity
+        </h4>
+        {[
+          "Equity"
+        ].map((sub) => renderSection("Owner's Equity", sub))}
 
-          <h4 className="text-lg font-semibold text-orange-700 mb-4 border-b-2 border-orange-200">
-            CURRENT LIABILITIES
-          </h4>
-          {renderSection("Current Liability")}
+        {/* --- NON-CURRENT LIABILITIES --- */}
+        <h4 className="text-lg font-semibold text-red-700 mb-3 border-b border-red-200 mt-6">
+          Non-Current Liabilities
+        </h4>
+        {[
+          "Non-current Liability"
+        ].map((sub) => renderSection("Non-Current Liabilities", sub))}
 
-          {/* Totals */}
-          <div className="my-6 p-4 rounded-lg border border-gray-200 bg-gray-50">
-            <div className="flex justify-between font-bold text-gray-800">
-              <span>Total Liabilities & Equity</span>
-              <span>PKR {totalLiabilitiesEquity.toLocaleString()}</span>
-            </div>
+        {/* --- CURRENT LIABILITIES --- */}
+        <h4 className="text-lg font-semibold text-orange-700 mb-3 border-b border-orange-200 mt-6">
+          Current Liabilities
+        </h4>
+        {[
+          "Current Liability"
+        ].map((sub) => renderSection("Current Liabilities", sub))}
+
+        <h4 className="text-lg font-semibold text-green-700 mb-3 border-b border-green-200 mt-6">
+          Less: Contra Liabilities
+        </h4>
+        {[
+          "Contra Liability",
+        ].map((sub) => {
+          const accounts = groupedData[sub];
+          if (!accounts) return null;
+          return (
+            <div className="mb-6" >
+              {
+                Object.entries(accounts).map(([account, amount]) => (
+                  <div key={account} className="flex justify-between items-center py-1 pl-4 text-gray-700">
+                    <span>{account}</span>
+                    <span>PKR {amount.toLocaleString()}</span>
+                  </div>
+                ))
+              }
+            </div>)
+        })}
+
+        <div className="my-6 p-4 rounded-lg border border-gray-200 bg-gray-50">
+          <div className="flex justify-between font-bold text-gray-800">
+            <span>Total Liabilities & Equity</span>
+            <span>PKR {totalLiabilitiesEquity.toLocaleString()}</span>
           </div>
+        </div>
 
-          <h4 className="text-lg font-semibold text-blue-700 mb-4 border-b-2 border-blue-200">
-            NON-CURRENT ASSETS
-          </h4>
-          {renderSection("Non-Current Asset")}
+        {/* === ASSETS SECTION === */}
+        <h3 className="text-xl font-bold text-gray-900 mb-4 border-b-2 border-gray-300 mt-10">
+          ASSETS
+        </h3>
 
-          <h4 className="text-lg font-semibold text-green-700 mb-4 border-b-2 border-green-200">
-            CURRENT ASSETS
-          </h4>
-          {renderSection("Current Asset")}
+        {/* --- NON-CURRENT ASSETS --- */}
+        <h4 className="text-lg font-semibold text-blue-700 mb-3 border-b border-blue-200">
+          Non-Current Assets
+        </h4>
+        {[
+          "Non-current Asset"
+        ].map((sub) => renderSection("Non-Current Assets", sub))}
 
-          {/* Totals */}
-          <div className="mt-6 p-4 rounded-lg border border-gray-200 bg-gray-50">
-            <div className="flex justify-between font-bold text-gray-800 mt-2">
-              <span>Total Assets</span>
-              <span>PKR {totalAssets.toLocaleString()}</span>
-            </div>
+        {/* --- CURRENT ASSETS --- */}
+        <h4 className="text-lg font-semibold text-green-700 mb-3 border-b border-green-200 mt-6">
+          Current Assets
+        </h4>
+        {[
+          "Current Asset"
+        ].map((sub) => renderSection("Current Assets", sub))}
+
+        <h4 className="text-lg font-semibold text-green-700 mb-3 border-b border-green-200 mt-6">
+          Less: Contra Assets
+        </h4>
+        {[
+          "Contra Asset",
+        ].map((sub) => {
+          const accounts = groupedData[sub];
+          if (!accounts) return null;
+          return (
+            <div className="mb-6" >
+              {
+                Object.entries(accounts).map(([account, amount]) => (
+                  <div key={account} className="flex justify-between items-center py-1 pl-4 text-gray-700">
+                    <span>{account}</span>
+                    <span>PKR {amount.toLocaleString()}</span>
+                  </div>
+                ))
+              }
+            </div>)
+        })}
+
+        <div className="mt-6 p-4 rounded-lg border border-gray-200 bg-gray-50">
+          <div className="flex justify-between font-bold text-gray-800 mt-2">
+            <span>Total Assets</span>
+            <span>PKR {totalAssets.toLocaleString()}</span>
           </div>
+        </div>
 
-          {/* Balance Check */}
-          <div
-            className={`mt-6 p-4 rounded-lg ${isBalanced
-              ? "bg-green-50 border border-green-200"
-              : "bg-red-50 border border-red-200"
-              }`}
-          >
-            <div className="flex justify-between items-center">
-              <span className="font-bold text-gray-700">Balance Check</span>
-              <span
-                className={`font-bold ${isBalanced ? "text-green-600" : "text-red-600"
-                  }`}
-              >
-                {isBalanced ? "✓ Balanced" : "⚠ Unbalanced"}
-              </span>
-            </div>
+        {/* Balance Check */}
+        <div
+          className={`mt-6 p-4 rounded-lg ${isBalanced
+            ? "bg-green-50 border border-green-200"
+            : "bg-red-50 border border-red-200"
+            }`}
+        >
+          <div className="flex justify-between items-center">
+            <span className="font-bold text-gray-700">Balance Check</span>
+            <span
+              className={`font-bold ${isBalanced ? "text-green-600" : "text-red-600"
+                }`}
+            >
+              {isBalanced ? "✓ Balanced" : "⚠ Unbalanced"}
+            </span>
           </div>
         </div>
       </div>

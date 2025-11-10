@@ -8,7 +8,8 @@ const {
     addAccounts,
     editAccount,
     deleteAccount,
-    deleteAllAccounts
+    deleteAllAccounts,
+    updateAllAccounts
 } = require("../controllers/accountController");
 
 const router = express.Router({ mergeParams: true });
@@ -24,5 +25,6 @@ router.get("/:accountId", getAccount);
 router.put("/:accountId/edit", adminMiddleware, editAccount);
 router.delete("/:accountId", adminMiddleware, deleteAccount);
 //router.delete("/", deleteAllAccounts);
+//router.put('/', adminMiddleware, updateAllAccounts);
 
 module.exports = router;
