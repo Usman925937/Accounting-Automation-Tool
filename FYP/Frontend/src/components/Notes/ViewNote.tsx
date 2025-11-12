@@ -80,12 +80,6 @@ const ViewNote = () => {
               </h3>
               <p className="text-gray-800">{fsMap[note.financialStatement as keyof typeof fsMap]}</p>
             </div>
-            <div>
-              <h3 className="text-sm font-semibold text-gray-500 uppercase mb-1">
-                Linked Account
-              </h3>
-              <p className="text-gray-800">{note.linkedAccount || "—"}</p>
-            </div>
           </div>
 
           {user?.role === "admin" && (
