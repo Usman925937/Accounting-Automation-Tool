@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import useAccountingStore from "../../store/accountingStore";
 import { calculateTotals } from "../../utils/CalculateTotals";
+import LineItem from "./LineItem";
 
 const BalanceSheet = () => {
   const { journalEntries, selectedFinancialYear } = useAccountingStore();
@@ -62,12 +63,12 @@ const BalanceSheet = () => {
       "Liability": calculated.liabilities,
     };
 
-    // ✅ Add retained earnings to equity section
+    // Add retained earnings to equity section
     if (!map["Equity"]) map["Equity"] = {};
     map["Equity"]["Retained Earnings"] =
       (map["Equity"]["Retained Earnings"] || 0) + calculated.netIncome;
 
-    // ✅ Add accumulated oci to equity section
+    // Add accumulated oci to equity section
     if (!map["Equity"]) map["Equity"] = {};
     map["Equity"]["Accumulated OCI"] =
       (map["Equity"]["Accumulated OCI"] || 0) + calculated.oci;
@@ -86,10 +87,7 @@ const BalanceSheet = () => {
     return (
       <div className="mb-6">
         {Object.entries(accounts).map(([account, amount]) => (
-          <div key={account} className="flex justify-between items-center py-1 pl-4 text-gray-700">
-            <span>{account}</span>
-            <span>PKR {amount.toLocaleString()}</span>
-          </div>
+          <LineItem key={account} accountName={account} amount={amount} />
         ))}
         <div className="flex justify-between items-center py-2 border-t border-gray-200 font-semibold text-gray-800 mt-1">
           <span className="font-bold">Total {title}</span>
@@ -185,10 +183,7 @@ const BalanceSheet = () => {
             <div className="mb-6" >
               {
                 Object.entries(accounts).map(([account, amount]) => (
-                  <div key={account} className="flex justify-between items-center py-1 pl-4 text-gray-700">
-                    <span>{account}</span>
-                    <span>PKR {amount.toLocaleString()}</span>
-                  </div>
+                  <LineItem key={account} accountName={account} amount={amount} />
                 ))
               }
             </div>)
@@ -234,10 +229,7 @@ const BalanceSheet = () => {
             <div className="mb-6" >
               {
                 Object.entries(accounts).map(([account, amount]) => (
-                  <div key={account} className="flex justify-between items-center py-1 pl-4 text-gray-700">
-                    <span>{account}</span>
-                    <span>PKR {amount.toLocaleString()}</span>
-                  </div>
+                  <LineItem key={account} accountName={account} amount={amount} />
                 ))
               }
             </div>)

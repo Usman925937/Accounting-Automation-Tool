@@ -2,6 +2,7 @@ const Account = require('../models/Account');
 const FinancialYear = require('../models/FinancialYear');
 const Company = require('../models/Company');
 const JournalEntry = require('../models/JournalEntry');
+const Note = require('../models/Note');
 
 exports.initialSetup = async (req, res) => {
     const company = await Company.findById(req.user.company);
@@ -21,11 +22,14 @@ exports.initialSetup = async (req, res) => {
         .populate('creditAccount')
         .sort({ date: -1, createdAt: -1 });
 
+    const notes = await Note.find({ financialYear: financialYear._id });
+
     res.status(200).json({
         message: "App started successfully",
         accounts,
         financialYear,
         financialYears,
-        journalEntries
+        journalEntries,
+        notes
     });
 }

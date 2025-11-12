@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import useAccountingStore from "../../store/accountingStore";
 import { calculateTotals } from "../../utils/CalculateTotals";
+import LineItem from "./LineItem";
 
 const ComprehensiveIncome = () => {
     const { journalEntries, selectedFinancialYear } = useAccountingStore();
@@ -103,10 +104,7 @@ const ComprehensiveIncome = () => {
                     <h3 className="font-semibold text-green-700 mb-1">Revenues</h3>
                     <ul className="pl-4">
                         {Object.entries(comprehensiveRevenue).map(([account, amount]) => (
-                            <li key={account} className="flex justify-between">
-                                <span>{account}</span>
-                                <span>{amount.toLocaleString()}</span>
-                            </li>
+                            <LineItem key={account} accountName={account} amount={amount} />
                         ))}
                     </ul>
                 </div>
@@ -115,10 +113,7 @@ const ComprehensiveIncome = () => {
                     <h3 className="font-semibold text-red-700 mb-1">Expenses</h3>
                     <ul className="pl-4">
                         {Object.entries(comprehensiveExpense).map(([account, amount]) => (
-                            <li key={account} className="flex justify-between">
-                                <span>{account}</span>
-                                <span>{amount.toLocaleString()}</span>
-                            </li>
+                            <LineItem key={account} accountName={account} amount={amount} />
                         ))}
                     </ul>
                 </div>

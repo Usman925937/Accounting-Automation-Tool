@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import useAccountingStore from "../../store/accountingStore";
 import { calculateTotals } from "../../utils/CalculateTotals";
+import LineItem from "./LineItem";
 
 const CashFlowStatement = () => {
   const { journalEntries, selectedFinancialYear } = useAccountingStore();
@@ -126,11 +127,8 @@ const CashFlowStatement = () => {
           {Object.keys(data).length === 0 ? (
             <p className="text-gray-500">No transactions recorded</p>
           ) : (
-            Object.entries(data).map(([name, amt]) => (
-              <div key={name} className="flex justify-between items-center py-1 text-gray-700">
-                <span>{name}</span>
-                <span>{amt < 0 ? `(${Math.abs(amt).toLocaleString()})` : amt.toLocaleString()}</span>
-              </div>
+            Object.entries(data).map(([account, amount]) => (
+              <LineItem key={account} accountName={account} amount={amount} />
             ))
           )}
 

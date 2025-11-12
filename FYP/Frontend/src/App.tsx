@@ -31,6 +31,12 @@ import FinancialYears from './components/Admin/FinancialYears';
 import AddFinancialYear from './components/Admin/AddFinancialYear';
 import CloseFinancialYear from './components/Admin/CloseFinancialYear';
 import useAccountingStore from './store/accountingStore';
+import AddNote from './components/Notes/AddNote';
+import Notes from './components/Notes/Notes';
+import EditNote from './components/Notes/EditNote';
+import ViewNote from './components/Notes/ViewNote';
+import useNotesStore from './store/notesStore';
+import About from './components/Layout/About';
 
 const App = () => {
   const { setUser } = useAuthStore();
@@ -40,6 +46,7 @@ const App = () => {
     setActiveFinancialYear,
     setFinancialYears,
     setSelectedFinancialYear } = useAccountingStore();
+  const { setNotes } = useNotesStore();
   const [loading, setLoading] = useState(true);
 
   // fetch user
@@ -57,6 +64,7 @@ const App = () => {
         setSelectedFinancialYear(res.data.financialYear);
         setFinancialYears(res.data.financialYears);
         setJournalEntries(res.data.journalEntries);
+        setNotes(res.data.notes);
 
       } catch (error) {
         console.error("Failed to fetch user:", error);
@@ -93,12 +101,20 @@ const App = () => {
           {/* Company & Profile */}
           <Route path="company" element={<Company />} />
           <Route path="profile" element={<Profile />} />
+          <Route path="about" element={<About />} />
 
           {/* Transactions */}
           <Route path="journal" element={<JournalEntries />} />
           <Route path="add-transaction" element={<TransactionInput />} />
           <Route path="ledgers" element={<Ledgers />} />
           <Route path="trial-balance" element={<TrialBalance />} />
+
+          {/* Notes */}
+          <Route path="notes" element={<Notes />} />
+          <Route path="notes/add" element={<AddNote />} />
+          <Route path="notes/edit/:id" element={<EditNote />} />
+          <Route path="notes/:id" element={<ViewNote />} />
+
         </Route>
 
         {/* Profile */}

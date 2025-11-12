@@ -43,7 +43,8 @@ exports.createNote = async (req, res) => {
       financialYear,
     });
 
-    res.status(201).json({ message: "Note created successfully", note });
+    const notes = await Note.find({ financialYear })
+    res.status(201).json({ message: "Note created successfully", notes });
   } catch (error) {
     console.error("Error creating note:", error);
     res.status(500).json({ message: "Error creating note" });
@@ -132,7 +133,9 @@ exports.updateNote = async (req, res) => {
 
     await note.save();
 
-    res.status(200).json({ note });
+    const notes = await Note.find({ financialYear })
+    res.status(200).json({ message: "Successfully updated note", notes });
+
   } catch (error) {
     console.error("Error updating note:", error);
     res.status(500).json({ message: "Error updating note" });
@@ -158,7 +161,9 @@ exports.deleteNote = async (req, res) => {
 
     await note.deleteOne();
 
-    res.status(200).json({ message: "Note deleted successfully" });
+    const notes = await Note.find({ financialYear })
+    res.status(200).json({ message: "Note deleted successfully", notes });
+
   } catch (error) {
     console.error("Error deleting note:", error);
     res.status(500).json({ message: "Error deleting note" });
@@ -186,7 +191,9 @@ exports.unlinkNote = async (req, res) => {
     note.linkedAccount = null;
     await note.save();
 
+    const notes = await Note.find({ financialYear })
     res.status(200).json({ message: "Note unlinked successfully", note });
+
   } catch (error) {
     console.error("Error unlinking note:", error);
     res.status(500).json({ message: "Error unlinking note" });

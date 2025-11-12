@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import useAccountingStore from "../../store/accountingStore";
+import LineItem from "./LineItem";
 
 const ProfitLossStatement = () => {
   const { journalEntries, selectedFinancialYear } = useAccountingStore();
@@ -89,13 +90,7 @@ const ProfitLossStatement = () => {
           {title || subCategory}
         </h5>
         {Object.entries(accounts).map(([account, amount]) => (
-          <div
-            key={account}
-            className="flex justify-between items-center py-1 pl-4 text-gray-700"
-          >
-            <span>{account}</span>
-            <span>PKR {amount.toLocaleString()}</span>
-          </div>
+          <LineItem key={account} accountName={account} amount={amount} />
         ))}
       </div>
     );

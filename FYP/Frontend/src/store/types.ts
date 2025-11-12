@@ -18,6 +18,7 @@ export type JournalEntry = {
     date: string,
     description: string,
     debitAccount: {
+        _id: string,
         accountName: string,
         accountType: string,
         category: string,
@@ -25,6 +26,7 @@ export type JournalEntry = {
         financialStatement: string
     },
     creditAccount: {
+        _id: string,
         accountName: string,
         accountType: string,
         category: string,
@@ -42,4 +44,15 @@ export type FinancialYear = {
     startDate: string,
     endDate: string,
     isActive: boolean
+}
+
+// note type
+export type Note = {
+    _id: string,
+    title: string,
+    noteNumber: number,
+    description: string,
+    linkedAccount: string | null,
+    financialYear: string,
+    financialStatement: string
 }

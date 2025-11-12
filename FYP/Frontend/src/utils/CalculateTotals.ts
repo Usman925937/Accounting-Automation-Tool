@@ -35,6 +35,7 @@ export const calculateTotals = (entries: JournalEntry[]) => {
         if (creditAccount.category === 'Equity') totals.totalEquity += amount;
         
         if (creditAccount.category === 'Revenue' && creditAccount.financialStatement === 'Income Statement') totals.netIncome += amount;
+        if (creditAccount.category === 'Expense' && creditAccount.financialStatement === 'Income Statement') totals.netIncome += amount;
     
         if (creditAccount.category === 'Revenue' && creditAccount.financialStatement === 'Income Statement') totals.revenue += amount;
         if (creditAccount.category === 'Expense' && creditAccount.financialStatement === 'Income Statement') totals.expenses -= amount;

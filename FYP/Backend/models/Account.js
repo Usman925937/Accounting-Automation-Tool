@@ -29,7 +29,7 @@ const AccountSchema = new mongoose.Schema({
             // --- Balance Sheet: Liabilities ---
             "Current Liability",
             "Non-current Liability",
-            "Contra Liability"
+            "Contra Liability",
 
             // --- Equity ---
             "Equity",

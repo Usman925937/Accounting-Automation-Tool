@@ -8,7 +8,8 @@ import {
   Plus,
   Activity,
   LogOut,
-  Wallet
+  Wallet,
+  BookOpenText
 } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
 import { useState } from 'react';
@@ -16,6 +17,7 @@ import api from '../../api/api';
 import useAlertStore from '../../store/alertStore';
 import Spinner from './Spinner';
 import useAccountingStore from '../../store/accountingStore';
+import useNotesStore from '../../store/notesStore';
 
 interface SidebarProps {
   sidebarOpen: boolean;
@@ -27,19 +29,22 @@ function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
   const [loading, setLoading] = useState(false);
   const { addAlert } = useAlertStore();
   const { clearAccounts } = useAccountingStore();
+  const { clearNotes } = useNotesStore();
 
   // navigation
   const navigation = [
     { id: 'dashboard', name: 'Dashboard', icon: TrendingUp, color: 'text-blue-600', path: '/dashboard' },
     { id: 'health', name: 'Financial Health', icon: Activity, color: 'text-emerald-600', path: '/financial-health' },
+    
     { id: 'transactions', name: 'Add Transaction', icon: Plus, color: 'text-green-600', path: '/add-transaction' },
     { id: 'journal', name: 'Journal Entries', icon: FileText, color: 'text-purple-600', path: '/journal' },
     { id: 'ledgers', name: 'Ledgers', icon: Calculator, color: 'text-orange-600', path: '/ledgers' },
     { id: 'trial', name: 'Trial Balance', icon: PieChart, color: 'text-pink-600', path: '/trial-balance' },
     { id: 'statements', name: 'Financial Statements', icon: FileText, color: 'text-indigo-600', path: '/financial-statements' },
-
-    // ✅ New Accounts Button
+    
     { id: 'accounts', name: 'Accounts', icon: Wallet, color: 'text-teal-600', path: '/accounts' },
+    { id: 'notes', name: 'Notes', icon: BookOpenText, color: 'text-teal-600', path: '/notes' },
+    
   ];
 
   const handleLogout = async () => {
@@ -48,6 +53,7 @@ function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
       await api.post('/auth/logout');
       logout();
       clearAccounts();
+      clearNotes();
       addAlert("Logged out successfully", "success");
     } catch (error) {
       addAlert("Logout failed", "error");
