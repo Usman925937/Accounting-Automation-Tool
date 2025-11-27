@@ -56,7 +56,6 @@ const App = () => {
       try {
         const response = await api.get('/users/me');
         setUser(response.data.user);
-        setJournalEntries(response.data.journalEntries);
 
         const res = await api.get('/');
         setAccounts(res.data.accounts);
