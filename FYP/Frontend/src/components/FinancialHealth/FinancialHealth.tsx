@@ -1,26 +1,16 @@
-// src/components/dashboard/FinancialHealth.tsx
 import { useMemo, useCallback } from 'react';
 import {
   Activity, Shield, Target, TrendingUp, BarChart3, CreditCard,
   Banknote, Calculator, Award, CheckCircle, AlertTriangle,
   Bot, ArrowRight
 } from 'lucide-react';
-import useAccountingStore from '../../store/accountingStore';
-import { calculateTotals, calculateRatios, calculateHealthScore } from '../../utils/chatBotCalculations';
 import Chatbot from './Chatbot';
+import useCalculationsStore from '../../store/calculationsStore';
+import { calculateHealthScore } from '../../utils/calculateHealthScore';
+import { Link } from 'react-router';
 
 const FinancialHealth = () => {
-  const { accounts, selectedFinancialYear } = useAccountingStore();
-
-  // --- Core Calculations (fully memoized) ---
-  const totals = useMemo(() => {
-    if (!selectedFinancialYear) return calculateTotals(accounts);
-    return calculateTotals(accounts, selectedFinancialYear._id);
-  }, [accounts, selectedFinancialYear]);
-
-  const ratios = useMemo(() => {
-    return calculateRatios(totals);
-  }, [totals]);
+  const { totals, ratios } = useCalculationsStore();
 
   const healthScore = useMemo(() => {
     return calculateHealthScore(totals, ratios);
@@ -37,6 +27,15 @@ const FinancialHealth = () => {
   const status = getHealthStatus(healthScore);
   const StatusIcon = status.icon;
 
+  // Ratios
+  const currentRatio = ratios.liquidity.currentRatio ?? 0;
+  const netProfitMargin = ratios.profitability.netProfitMargin ?? 0;
+  const ROE = ratios.return.roe ?? 0;
+  const assetTurnover = ratios.efficiency.assetTurnover ?? 0;
+  const debtToEquity = ratios.solvency.debtToEquity ?? 0;
+  const cashRatio = ratios.liquidity.cashRatio ?? 0;
+  const operatingMargin = ratios.profitability.operatingProfitMargin ?? 0;
+
   // --- Key Metrics (dynamic & accurate) ---
   const keyMetrics = useMemo(() => [
     {
@@ -50,68 +49,68 @@ const FinancialHealth = () => {
     },
     {
       name: 'Current Ratio',
-      value: ratios.currentRatio.toFixed(2),
+      value: currentRatio.toFixed(2),
       icon: Shield,
-      color: ratios.currentRatio >= 2 ? 'text-green-600' : ratios.currentRatio >= 1.5 ? 'text-blue-600' : 'text-red-600',
-      bgColor: ratios.currentRatio >= 2 ? 'bg-green-50' : ratios.currentRatio >= 1.5 ? 'bg-blue-50' : 'bg-red-50',
-      trend: ratios.currentRatio >= 2 ? 'Strong' : ratios.currentRatio >= 1.5 ? 'Good' : 'Needs Attention',
-      trendType: ratios.currentRatio >= 1.5 ? 'positive' : 'negative'
+      color: currentRatio >= 2 ? 'text-green-600' : currentRatio >= 1.5 ? 'text-blue-600' : 'text-red-600',
+      bgColor: currentRatio >= 2 ? 'bg-green-50' : currentRatio >= 1.5 ? 'bg-blue-50' : 'bg-red-50',
+      trend: currentRatio >= 2 ? 'Strong' : currentRatio >= 1.5 ? 'Good' : 'Needs Attention',
+      trendType: currentRatio >= 1.5 ? 'positive' : 'negative'
     },
     {
       name: 'Net Profit Margin',
-      value: `${ratios.netProfitMargin.toFixed(1)}%`,
+      value: `${netProfitMargin.toFixed(1)}%`,
       icon: Target,
-      color: ratios.netProfitMargin > 15 ? 'text-green-600' : ratios.netProfitMargin > 5 ? 'text-blue-600' : 'text-red-600',
-      bgColor: ratios.netProfitMargin > 15 ? 'bg-green-50' : ratios.netProfitMargin > 5 ? 'bg-blue-50' : 'bg-red-50',
-      trend: ratios.netProfitMargin > 15 ? 'Excellent' : ratios.netProfitMargin > 0 ? 'Positive' : 'Loss-Making',
-      trendType: ratios.netProfitMargin > 10 ? 'positive' : ratios.netProfitMargin > 0 ? 'neutral' : 'negative'
+      color: netProfitMargin > 15 ? 'text-green-600' : netProfitMargin > 5 ? 'text-blue-600' : 'text-red-600',
+      bgColor: netProfitMargin > 15 ? 'bg-green-50' : netProfitMargin > 5 ? 'bg-blue-50' : 'bg-red-50',
+      trend: netProfitMargin > 15 ? 'Excellent' : netProfitMargin > 0 ? 'Positive' : 'Loss-Making',
+      trendType: netProfitMargin > 10 ? 'positive' : netProfitMargin > 0 ? 'neutral' : 'negative'
     },
     {
       name: 'Return on Equity',
-      value: `${ratios.ROE.toFixed(1)}%`,
+      value: `${ROE.toFixed(1)}%`,
       icon: TrendingUp,
-      color: ratios.ROE > 20 ? 'text-green-600' : ratios.ROE > 10 ? 'text-blue-600' : 'text-red-600',
-      bgColor: ratios.ROE > 20 ? 'bg-green-50' : ratios.ROE > 10 ? 'bg-blue-50' : 'bg-red-50',
-      trend: ratios.ROE > 20 ? 'Outstanding' : ratios.ROE > 10 ? 'Solid' : 'Low',
-      trendType: ratios.ROE > 15 ? 'positive' : 'negative'
+      color: ROE > 20 ? 'text-green-600' : ROE > 10 ? 'text-blue-600' : 'text-red-600',
+      bgColor: ROE > 20 ? 'bg-green-50' : ROE > 10 ? 'bg-blue-50' : 'bg-red-50',
+      trend: ROE > 20 ? 'Outstanding' : ROE > 10 ? 'Solid' : 'Low',
+      trendType: ROE > 15 ? 'positive' : 'negative'
     },
     {
       name: 'Asset Turnover',
-      value: `${ratios.assetTurnover.toFixed(2)}x`,
+      value: `${assetTurnover.toFixed(2)}x`,
       icon: BarChart3,
-      color: ratios.assetTurnover > 1.2 ? 'text-green-600' : ratios.assetTurnover > 0.8 ? 'text-blue-600' : 'text-red-600',
-      bgColor: ratios.assetTurnover > 1.2 ? 'bg-green-50' : ratios.assetTurnover > 0.8 ? 'bg-blue-50' : 'bg-red-50',
-      trend: ratios.assetTurnover > 1.2 ? 'Highly Efficient' : ratios.assetTurnover > 0.8 ? 'Moderate' : 'Inefficient',
-      trendType: ratios.assetTurnover > 1 ? 'positive' : 'negative'
+      color: assetTurnover > 1.2 ? 'text-green-600' : assetTurnover > 0.8 ? 'text-blue-600' : 'text-red-600',
+      bgColor: assetTurnover > 1.2 ? 'bg-green-50' : assetTurnover > 0.8 ? 'bg-blue-50' : 'bg-red-50',
+      trend: assetTurnover > 1.2 ? 'Highly Efficient' : assetTurnover > 0.8 ? 'Moderate' : 'Inefficient',
+      trendType: assetTurnover > 1 ? 'positive' : 'negative'
     },
     {
       name: 'Debt-to-Equity',
-      value: ratios.debtToEquity === Infinity ? '∞' : ratios.debtToEquity.toFixed(2),
+      value: debtToEquity === Infinity ? '∞' : debtToEquity.toFixed(2),
       icon: CreditCard,
-      color: ratios.debtToEquity <= 0.5 ? 'text-green-600' : ratios.debtToEquity <= 1 ? 'text-yellow-600' : 'text-red-600',
-      bgColor: ratios.debtToEquity <= 0.5 ? 'bg-green-50' : ratios.debtToEquity <= 1 ? 'bg-yellow-50' : 'bg-red-50',
-      trend: ratios.debtToEquity <= 0.5 ? 'Conservative' : ratios.debtToEquity <= 1 ? 'Moderate' : 'High Risk',
-      trendType: ratios.debtToEquity <= 1 ? 'positive' : 'negative'
+      color: debtToEquity <= 0.5 ? 'text-green-600' : debtToEquity <= 1 ? 'text-yellow-600' : 'text-red-600',
+      bgColor: debtToEquity <= 0.5 ? 'bg-green-50' : debtToEquity <= 1 ? 'bg-yellow-50' : 'bg-red-50',
+      trend: debtToEquity <= 0.5 ? 'Conservative' : debtToEquity <= 1 ? 'Moderate' : 'High Risk',
+      trendType: debtToEquity <= 1 ? 'positive' : 'negative'
     },
     {
       name: 'Cash Ratio',
-      value: ratios.cashRatio.toFixed(2),
+      value: cashRatio.toFixed(2),
       icon: Banknote,
-      color: ratios.cashRatio >= 0.3 ? 'text-green-600' : ratios.cashRatio >= 0.1 ? 'text-blue-600' : 'text-red-600',
-      bgColor: ratios.cashRatio >= 0.3 ? 'bg-green-50' : ratios.cashRatio >= 0.1 ? 'bg-blue-50' : 'bg-red-50',
-      trend: ratios.cashRatio >= 0.3 ? 'Very Strong' : ratios.cashRatio >= 0.1 ? 'Adequate' : 'Weak',
-      trendType: ratios.cashRatio >= 0.2 ? 'positive' : 'negative'
+      color: cashRatio >= 0.3 ? 'text-green-600' : cashRatio >= 0.1 ? 'text-blue-600' : 'text-red-600',
+      bgColor: cashRatio >= 0.3 ? 'bg-green-50' : cashRatio >= 0.1 ? 'bg-blue-50' : 'bg-red-50',
+      trend: cashRatio >= 0.3 ? 'Very Strong' : cashRatio >= 0.1 ? 'Adequate' : 'Weak',
+      trendType: cashRatio >= 0.2 ? 'positive' : 'negative'
     },
     {
       name: 'Operating Margin',
-      value: `${ratios.operatingMargin.toFixed(1)}%`,
+      value: `${operatingMargin.toFixed(1)}%`,
       icon: Calculator,
-      color: ratios.operatingMargin > 20 ? 'text-green-600' : ratios.operatingMargin > 8 ? 'text-blue-600' : 'text-red-600',
-      bgColor: ratios.operatingMargin > 20 ? 'bg-green-50' : ratios.operatingMargin > 8 ? 'bg-blue-50' : 'bg-red-50',
-      trend: ratios.operatingMargin > 20 ? 'Excellent' : ratios.operatingMargin > 8 ? 'Healthy' : 'Concerning',
-      trendType: ratios.operatingMargin > 12 ? 'positive' : 'negative'
+      color: operatingMargin > 20 ? 'text-green-600' : operatingMargin > 8 ? 'text-blue-600' : 'text-red-600',
+      bgColor: operatingMargin > 20 ? 'bg-green-50' : operatingMargin > 8 ? 'bg-blue-50' : 'bg-red-50',
+      trend: operatingMargin > 20 ? 'Excellent' : operatingMargin > 8 ? 'Healthy' : 'Concerning',
+      trendType: operatingMargin > 12 ? 'positive' : 'negative'
     }
-  ], [healthScore, ratios, status]);
+  ], [ROE, assetTurnover, cashRatio, currentRatio, debtToEquity, healthScore, netProfitMargin, operatingMargin, status.bg, status.color]);
 
   return (
     <div className="space-y-8">
@@ -207,12 +206,12 @@ const FinancialHealth = () => {
         })}
       </div>
 
-      {/* Optional: Deep Analysis Toggle */}
+      {/* Deep Analysis Toggle */}
       <div className="text-center mt-12">
-        <button className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all shadow-lg">
+        <Link to='/financial-ratios' className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all shadow-lg">
           View Detailed Analysis
           <ArrowRight className="ml-2 h-5 w-5" />
-        </button>
+        </Link>
       </div>
     </div>
   );

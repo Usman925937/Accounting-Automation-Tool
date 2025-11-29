@@ -37,6 +37,7 @@ import EditNote from './components/Notes/EditNote';
 import ViewNote from './components/Notes/ViewNote';
 import useNotesStore from './store/notesStore';
 import About from './components/Layout/About';
+import FinancialRatios from './components/FinancialHealth/FinancialRatios';
 
 const App = () => {
   const { setUser } = useAuthStore();
@@ -88,6 +89,7 @@ const App = () => {
           <Route index element={<Navigate to="/dashboard" replace />} />
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="financial-health" element={<FinancialHealth />} />
+          <Route path="financial-ratios" element={<FinancialRatios />} />
 
           {/* Financial Statements */}
           <Route path="financial-statements" element={<FinancialStatements />} />

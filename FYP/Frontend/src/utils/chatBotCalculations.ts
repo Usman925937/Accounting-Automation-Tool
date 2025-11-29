@@ -89,14 +89,7 @@ const round = (n: number, digits = 2) => {
   return Math.round((n + Number.EPSILON) * m) / m;
 };
 
-// ---------- Core: build totals from accounts ----------
-/*******************************************************************************
-  calculateTotals
-  - accounts: array of Account records (as fetched from DB)
-  - financialYearId: optional id to pick yearlyBalances matching that year; if omitted, use account.balance or closingBalance sum
-
-  The function returns an aggregated Totals object with safe numeric values.
-*******************************************************************************/
+// ---------- Calculate Totals ----------
 export const calculateTotals = (accounts: Account[], financialYearId?: string): Totals => {
   const t: Partial<Totals> = {};
 
@@ -374,7 +367,7 @@ export const calculateRatios = (totals: Totals, averages?: Partial<{
   - ratios: Ratios
   Returns integer 0..100
   The weights emulate a balanced view: Profitability 25, Liquidity 20, Solvency 15,
-  Efficiency 15, Growth 10, Stability 10, Cash management 5 (similar to your prior design)
+  Efficiency 15, Growth 10, Stability 10, Cash management 5
 *******************************************************************************/
 export const calculateHealthScore = (totals: Totals, ratios: Ratios) => {
   const netIncome = safe(totals.netProfit);
