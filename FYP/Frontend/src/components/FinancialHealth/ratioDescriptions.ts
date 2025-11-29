@@ -60,3 +60,11 @@ export const ratioDescriptions: Record<string, { title: string; description: str
     workingCapitalTurnover: { title: 'Working Capital Turnover', description: 'Shows how efficiently the company uses its working capital to generate revenue.', formula: 'Net Sales / Average Working Capital' },
     operatingCycle: { title: 'Operating Cycle', description: "Measures the time it takes to convert inventory into cash; shorter cycles indicate better efficiency.", formula: 'Inventory Period + Receivables Collection Period' }
 };
+
+export const ratioOverview: Record<string, { title: string, description: string }> = {
+    profitability: {title: 'Profitability Ratios', description: 'Profitability ratios are financial metrics used to measure a company’s ability to generate profit from its sales, assets, and equity, indicating how efficiently it manages its resources to earn returns for shareholders.'},
+    return: {title: 'Return Ratios', description: 'Return Ratios measure how efficiently a company uses its resources,such as assets, equity, or capital employed , to generate profit.'},
+    solvency: {title: 'Solvency Ratios', description: 'Measure a company’s ability to meet its long-term debts and financial obligations. They show whether the business is financially stable and capable of surviving in the long run.'},
+    liquidity: {title: 'Liquidity Ratios', description: 'Measure a company’s ability to meet its short-term obligations using its current or liquid assets. They show whether the business can pay its bills on time without financial stress.'},
+    efficiency: {title: 'Efficiency Ratios', description: 'Efficiency ratios are also called activity ratios and they measure how effectively a company uses its assets and resources to generate revenue.'}
+};

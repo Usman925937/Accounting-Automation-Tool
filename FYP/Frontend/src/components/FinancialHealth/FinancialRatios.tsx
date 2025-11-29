@@ -1,12 +1,12 @@
 import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import {
-    RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer,
-    BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid
+    BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid,
+    ResponsiveContainer, ReferenceLine
 } from 'recharts';
 import { ArrowLeft } from 'lucide-react';
 import useCalculationsStore from '../../store/calculationsStore';
-import { ratioDescriptions } from './ratioDescriptions';
+import { ratioDescriptions, ratioOverview } from './ratioDescriptions';
 
 type Category = 'profitability' | 'return' | 'solvency' | 'liquidity' | 'efficiency';
 
@@ -22,13 +22,10 @@ const FinancialRatios: React.FC = () => {
     const { ratios } = useCalculationsStore();
     const [category, setCategory] = useState<Category>('profitability');
 
-    // Build chart data dynamically based on selected category
     const chartData = useMemo(() => {
         const catData: { name: string; value: number | null }[] = [];
-
-        const add = (key: string | keyof typeof ratioDescriptions, value: number | null) => {
-            catData.push({ name: typeof key === 'string' ? (ratioDescriptions[key]?.title ?? key) : String(key), value });
-        };
+        const add = (key: string, value: number | null) =>
+            catData.push({ name: ratioDescriptions[key]?.title ?? key, value });
 
         if (category === 'profitability') {
             const p = ratios.profitability;
@@ -70,90 +67,155 @@ const FinancialRatios: React.FC = () => {
             add('assetTurnover', e.assetTurnover);
             add('fixedAssetTurnover', e.fixedAssetTurnover);
             add('workingCapitalTurnover', e.workingCapitalTurnover);
-            add('operatingCycle', e.operatingCycle);
         }
 
         return catData;
     }, [category, ratios]);
 
-    // Decide which chart to show: percentages (profitability/return) -> Radar, others -> Bar
-    const isPercentageCategory = useMemo(() => category === 'profitability' || category === 'return', [category]);
-
     const formatValue = (val: number | null) => {
         if (val === null || val === undefined) return '—';
-        // For percentage categories, values are already percentages in your calculateRatios
-        if (isPercentageCategory) return `${val.toFixed(1)}%`;
-        // For other ratios, format intelligently
-        if (Math.abs(val) >= 1) return `${val.toFixed(2)}`;
-        return `${(val).toFixed(2)}`;
+        return val.toFixed(2);
     };
 
-    return (
-        <div className="space-y-8">
-            {/* Top Row: Back + Dropdown + Heading */}
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                    <Link to="/financial-health" className="inline-flex items-center px-4 py-2 bg-white/80 backdrop-blur-sm rounded-lg shadow-md border border-white/20 hover:shadow-lg transition">
-                        <ArrowLeft className="h-4 w-4 mr-2" /> Back
-                    </Link>
+    const getBenchmarkValue = () => {
+        const benchmarks: Record<string, number> = {
+            grossProfitMargin: 40, operatingProfitMargin: 15, netProfitMargin: 10,
+            roa: 8, roe: 15, roce: 12, roi: 10,
+            debtToEquity: 2, debtRatio: 0.5, interestCoverage: 3, equityRatio: 0.5,
+            currentRatio: 2, quickRatio: 1, cashRatio: 0.5
+        };
 
-                    <div className="bg-white/80 backdrop-blur-sm rounded-xl p-3 border border-white/20">
-                        <label className="sr-only">Select category</label>
-                        <select value={category} onChange={(e) => setCategory(e.target.value as Category)} className="bg-transparent outline-none">
-                            {Object.keys(CATEGORY_LABELS).map((k) => (
-                                <option key={k} value={k}>{CATEGORY_LABELS[k as Category]}</option>
+        const validRatios = chartData.filter(r => r.value !== null);
+        if (!validRatios.length) return null;
+
+        const highestValue = validRatios.reduce((max, curr) =>
+            Math.abs(curr.value!) > Math.abs(max.value!) ? curr : max
+        );
+
+        const foundKey = Object.keys(ratioDescriptions).find(
+            k => ratioDescriptions[k].title === highestValue.name
+        );
+
+        return foundKey ? benchmarks[foundKey] ?? null : null;
+    };
+
+    const benchmarkValue = getBenchmarkValue();
+
+    return (
+        <div className="space-y-10">
+            {/* --- HEADER SECTION --- */}
+            <div className="bg-white border border-gray-200 rounded-2xl p-8 shadow-sm">
+                <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
+
+                    {/* Left Controls */}
+                    <div className="flex items-center gap-4 flex-wrap">
+
+                        <Link
+                            to="/financial-health"
+                            className="inline-flex items-center px-4 py-2 bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition"
+                        >
+                            <ArrowLeft className="w-4 h-4 mr-2" />
+                            Back
+                        </Link>
+
+                        <select
+                            value={category}
+                            onChange={(e) => setCategory(e.target.value as Category)}
+                            className="px-4 py-2 bg-gray-50 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-indigo-500"
+                        >
+                            {Object.entries(CATEGORY_LABELS).map(([key, label]) => (
+                                <option key={key} value={key}>{label}</option>
                             ))}
                         </select>
                     </div>
-                </div>
 
-                <div>
-                    <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">{CATEGORY_LABELS[category]}</h1>
-                    <p className="text-sm text-gray-600">Detailed explanations and visualisations for {CATEGORY_LABELS[category].toLowerCase()}.</p>
+                    {/* Right Description */}
+                    <div className="lg:text-right">
+                        <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 text-transparent bg-clip-text">
+                            {CATEGORY_LABELS[category]}
+                        </h1>
+                        <p className="mt-3 text-sm text-gray-600 max-w-xl leading-relaxed">
+                            {ratioOverview[category].description}
+                        </p>
+                    </div>
                 </div>
-
-                <div />
             </div>
 
-            {/* Chart Area */}
-            <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-6 border border-white/20 shadow-lg">
-                <div style={{ height: 320 }}>
+            {/* --- CHART CARD --- */}
+            <div className="bg-white rounded-2xl p-8 border border-gray-200 shadow-sm">
+                <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-xl font-semibold text-gray-900">
+                        Ratio Performance
+                    </h2>
+
+                    {benchmarkValue !== null && (
+                        <span className="text-sm text-gray-500">
+                            Benchmark: {benchmarkValue.toFixed(1)}
+                        </span>
+                    )}
+                </div>
+
+                <div className="h-[380px]">
                     <ResponsiveContainer width="100%" height="100%">
-                        {isPercentageCategory ? (
-                            <RadarChart cx="50%" cy="50%" outerRadius={110} data={chartData.map(d => ({ name: d.name, value: d.value ?? 0 }))}>
-                                <PolarGrid />
-                                <PolarAngleAxis dataKey="name" />
-                                <PolarRadiusAxis angle={30} domain={[0, Math.max(100, ...chartData.map(d => d.value ?? 0))]} />
-                                <Radar name={CATEGORY_LABELS[category]} dataKey="value" stroke="#4f46e5" fill="#4f46e5" fillOpacity={0.2} />
-                            </RadarChart>
-                        ) : (
-                            <BarChart data={chartData.map(d => ({ name: d.name, value: d.value ?? 0 }))} layout="vertical" margin={{ left: 40, right: 20, top: 20, bottom: 20 }}>
-                                <CartesianGrid strokeDasharray="3 3" />
-                                <XAxis type="number" />
-                                <YAxis dataKey="name" type="category" width={180} />
-                                <Tooltip formatter={(value: unknown) => (value === 0 ? '—' : value)} />
-                                <Bar dataKey="value" fill="#4f46e5" />
-                            </BarChart>
-                        )}
+                        <BarChart
+                            data={chartData.map(d => ({ name: d.name, value: d.value ?? 0 }))}
+                            margin={{ top: 10, right: 20, left: 20, bottom: 60 }}
+                        >
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                            <XAxis
+                                dataKey="name"
+                                interval={0}
+                                angle={-35}
+                                textAnchor="end"
+                                height={70}
+                                tick={{ fontSize: 11 }}
+                            />
+                            <YAxis tickFormatter={(v) => formatValue(v)} />
+                            <Tooltip formatter={(v) => formatValue(v as number)} />
+                            <Bar dataKey="value" fill="#4f46e5" radius={[6, 6, 0, 0]} />
+                            {benchmarkValue !== null && (
+                                <ReferenceLine
+                                    y={benchmarkValue}
+                                    stroke="#10b981"
+                                    strokeDasharray="3 3"
+                                />
+                            )}
+                        </BarChart>
                     </ResponsiveContainer>
                 </div>
             </div>
 
-            {/* Ratios List */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {chartData.map((r) => {
-                    // find key from ratioDescriptions by matching title (fallback)
-                    const key = Object.keys(ratioDescriptions).find(k => ratioDescriptions[k].title === r.name) ?? null;
-                    const desc = key ? ratioDescriptions[key] : { title: r.name, description: '' };
+            {/* --- RATIO CARDS --- */}
+            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {chartData.map((ratio) => {
+                    const key = Object.keys(ratioDescriptions).find(
+                        k => ratioDescriptions[k].title === ratio.name
+                    );
+
+                    const desc = key ? ratioDescriptions[key] : { title: ratio.name, description: '' };
 
                     return (
-                        <div key={r.name} className="bg-white/80 backdrop-blur-sm rounded-2xl p-5 border border-white/20 shadow transition hover:shadow-2xl">
-                            <div className="flex items-center justify-between mb-2">
-                                <h3 className="text-sm font-semibold text-gray-700">{desc.title ?? r.name}</h3>
-                                <span className="text-xs text-gray-500">{formatValue(r.value)}</span>
+                        <div
+                            key={ratio.name}
+                            className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition"
+                        >
+                            <div className="flex justify-between items-start mb-3">
+                                <h3 className="text-md font-semibold text-gray-900">{desc.title}</h3>
+                                <span className="text-lg font-mono font-semibold text-gray-900">
+                                    {formatValue(ratio.value)}
+                                </span>
                             </div>
-                            <p className="text-sm text-gray-600">{desc.description}</p>
-                            {desc.formula && <p className="text-xs text-gray-400 mt-3">Formula: <span className="font-mono">{desc.formula}</span></p>}
+
+                            <p className="text-md text-gray-600 leading-relaxed">
+                                {desc.description}
+                            </p>
+
+                            {desc.formula && (
+                                <div className="mt-4 text-md bg-gray-50 border border-gray-200 rounded-lg p-3 text-gray-700">
+                                    <span className="font-medium">Formula:</span>{' '}
+                                    <span className="font-mono">{desc.formula}</span>
+                                </div>
+                            )}
                         </div>
                     );
                 })}
