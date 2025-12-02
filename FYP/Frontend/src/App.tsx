@@ -38,6 +38,7 @@ import ViewNote from './components/Notes/ViewNote';
 import useNotesStore from './store/notesStore';
 import About from './components/Layout/About';
 import FinancialRatios from './components/FinancialHealth/FinancialRatios';
+import ShariahCompliance from './components/ShariahCompliance/ShariahCompliance';
 
 const App = () => {
   const { setUser } = useAuthStore();
@@ -115,6 +116,9 @@ const App = () => {
           <Route path="notes/add" element={<AddNote />} />
           <Route path="notes/edit/:id" element={<EditNote />} />
           <Route path="notes/:id" element={<ViewNote />} />
+
+          {/* Shariah Compliace Checker */}
+          <Route path="shariah-compliance" element={<ShariahCompliance />} />
 
         </Route>
 

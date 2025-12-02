@@ -2,9 +2,9 @@ import { useMemo, useCallback } from 'react';
 import {
   Activity, Shield, Target, TrendingUp, BarChart3, CreditCard,
   Banknote, Calculator, Award, CheckCircle, AlertTriangle,
-  Bot, ArrowRight
+  ArrowRight
 } from 'lucide-react';
-import Chatbot from './Chatbot';
+// import Chatbot from './Chatbot';
 import useCalculationsStore from '../../store/calculationsStore';
 import { calculateHealthScore } from '../../utils/calculateHealthScore';
 import { Link } from 'react-router';
@@ -125,7 +125,7 @@ const FinancialHealth = () => {
       </div>
 
       {/* Top Row: Health Score + Chatbot */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="">
         {/* Health Score Card */}
         <div className="lg:col-span-2 bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-8 border border-white/20 hover:shadow-2xl transition-all duration-300">
           <div className="flex items-center justify-between mb-8">
@@ -160,12 +160,12 @@ const FinancialHealth = () => {
             <span className={`px-5 py-2.5 rounded-full text-sm font-bold ${status.bg} ${status.color}`}>
               {status.status} Financial Health
             </span>
-            <Chatbot /> {/* Clean integration — uses your original Chatbot */}
+            {/* <Chatbot /> */}
           </div>
         </div>
 
         {/* Placeholder for future sector card or quick stats */}
-        <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-3xl shadow-xl p-8 text-white">
+        {/* <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-3xl shadow-xl p-8 text-white">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-xl font-bold">Need Help?</h3>
             <Bot className="h-8 w-8 opacity-80" />
@@ -175,7 +175,7 @@ const FinancialHealth = () => {
           </p>
           <div className="text-3xl font-bold">Just click "Open Assistant"</div>
           <p className="text-sm text-indigo-200 mt-2">Powered by real-time financial data</p>
-        </div>
+        </div> */}
       </div>
 
       {/* Key Metrics Grid */}
