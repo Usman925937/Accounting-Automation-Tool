@@ -37,7 +37,9 @@ const ProfitLossStatement = () => {
         else if (sub.includes("Interest Expense")) totals.FinanceCost += amount;
         else if (sub.includes("Tax Expense")) totals.TaxExpense += amount;
         else if (sub.toLowerCase().includes("non")) totals.NonOperatingExpenses += amount;
+        else if (sub === "Operaating Expense - Depreciation") totals.OperatingExpenses += amount;
         else totals.OperatingExpenses += amount;
+
       }
 
       // CONTRA REVENUE
@@ -156,8 +158,10 @@ const ProfitLossStatement = () => {
         </h4>
         {[
           "Operating Expense",
+          "Operating Expense - Depreciation",
           "Other Expense"
-        ].map((sub) => renderSection(sub, sub, "blue"))}
+        ].map((sub) => renderSection(sub, sub, "blue"))
+        }
 
 
         <div className="flex justify-between items-center py-2 border-t-2 border-blue-300 font-bold mt-4">
@@ -200,8 +204,8 @@ const ProfitLossStatement = () => {
         {/* FINAL NET INCOME */}
         <div
           className={`p-4 rounded-lg mt-4 ${netIncome >= 0
-              ? "bg-green-50 border border-green-200"
-              : "bg-red-50 border border-red-200"
+            ? "bg-green-50 border border-green-200"
+            : "bg-red-50 border border-red-200"
             }`}
         >
           <div className="flex justify-between items-center">
