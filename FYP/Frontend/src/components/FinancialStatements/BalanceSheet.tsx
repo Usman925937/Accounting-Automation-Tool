@@ -16,7 +16,7 @@ const BalanceSheet = () => {
     for (const entry of journalEntries) {
       const { debitAccount, creditAccount, amount } = entry;
 
-      // ✅ Helper function to process any account
+      // Helper function to process any account
       const processAccount = (
         account: {
           accountName: string;
@@ -27,11 +27,18 @@ const BalanceSheet = () => {
         },
         isDebit: boolean
       ) => {
-        // Group by Equity or subCategory
-        const groupKey =
-          account.category === "Equity"
-            ? "Equity"
-            : account.subCategory ?? account.category;
+
+        // group key
+        let groupKey = account.subCategory ?? account.category;
+
+        // Fix grouping for contra accounts
+        if (account.category === "Contra Asset") {
+          groupKey = "Contra Asset"; // keep separate
+        }
+        if (account.category === "Contra Liability") {
+          groupKey = "Contra Liability"; // keep separate
+        }
+
 
         const accName = account.accountName;
         if (!map[groupKey]) map[groupKey] = {};
@@ -76,9 +83,14 @@ const BalanceSheet = () => {
     return { groupedData: map, totals };
   }, [journalEntries]);
 
-
   const sumSubCategory = (obj: Record<string, number>) =>
     Object.values(obj).reduce((a, b) => a + b, 0);
+
+  const sum = (obj?: Record<string, number>) =>
+    obj ? Object.values(obj).reduce((a, b) => a + b, 0) : 0;
+
+  const subtractContra = (normal?: Record<string, number>, contra?: Record<string, number>) =>
+    sum(normal) + sum(contra);
 
   // Helper: render grouped accounts under each section
   const renderSection = (title: string, subCategory: string) => {
@@ -159,9 +171,42 @@ const BalanceSheet = () => {
         <h4 className="text-lg font-semibold text-red-700 mb-3 border-b border-red-200 mt-6">
           Non-Current Liabilities
         </h4>
-        {[
-          "Non-current Liability"
-        ].map((sub) => renderSection("Non-Current Liabilities", sub))}
+
+        {/* Regular Non-Current Liabilities (no total yet) */}
+        {["Non-current Liability"].map(() => {
+          const accounts = groupedData["Non-current Liability"];
+          if (!accounts) return null;
+
+          return (
+            <>
+              {Object.entries(accounts).map(([acc, amt]) => (
+                <LineItem key={acc} accountName={acc} amount={amt} />
+              ))}
+            </>
+          );
+        })}
+
+        {/* Contra liabilities */}
+        {groupedData["Contra Liability"] && (
+          <>
+            {Object.entries(groupedData["Contra Liability"]).map(([acc, amt]) => (
+              <LineItem key={acc} accountName={`(${acc})`} amount={-amt} />
+            ))}
+          </>
+        )}
+
+        {/* Total */}
+        <div className="flex justify-between items-center py-2 border-t border-gray-200 font-semibold text-gray-800 mt-1">
+          <span className="font-bold">Total Non-Current Liabilities</span>
+          <span className="font-bold">
+            PKR{" "}
+            {subtractContra(
+              groupedData["Non-current Liability"],
+              groupedData["Contra Liability"]
+            ).toLocaleString()}
+          </span>
+        </div>
+
 
         {/* --- CURRENT LIABILITIES --- */}
         <h4 className="text-lg font-semibold text-orange-700 mb-3 border-b border-orange-200 mt-6">
@@ -171,23 +216,6 @@ const BalanceSheet = () => {
           "Current Liability"
         ].map((sub) => renderSection("Current Liabilities", sub))}
 
-        <h4 className="text-lg font-semibold text-green-700 mb-3 border-b border-green-200 mt-6">
-          Less: Contra Liabilities
-        </h4>
-        {[
-          "Contra Liability",
-        ].map((sub) => {
-          const accounts = groupedData[sub];
-          if (!accounts) return null;
-          return (
-            <div className="mb-6" >
-              {
-                Object.entries(accounts).map(([account, amount]) => (
-                  <LineItem key={account} accountName={account} amount={amount} />
-                ))
-              }
-            </div>)
-        })}
 
         <div className="my-6 p-4 rounded-lg border border-gray-200 bg-gray-50">
           <div className="flex justify-between font-bold text-gray-800">
@@ -201,13 +229,44 @@ const BalanceSheet = () => {
           ASSETS
         </h3>
 
-        {/* --- NON-CURRENT ASSETS --- */}
         <h4 className="text-lg font-semibold text-blue-700 mb-3 border-b border-blue-200">
           Non-Current Assets
         </h4>
-        {[
-          "Non-current Asset"
-        ].map((sub) => renderSection("Non-Current Assets", sub))}
+
+        {/* Regular Non-Current Assets (no total yet) */}
+        {["Non-current Asset"].map(() => {
+          const accounts = groupedData["Non-current Asset"];
+          if (!accounts) return null;
+
+          return (
+            <>
+              {Object.entries(accounts).map(([acc, amt]) => (
+                <LineItem key={acc} accountName={acc} amount={amt} />
+              ))}
+            </>
+          );
+        })}
+
+        {/* Contra assets */}
+        {groupedData["Contra Asset"] && (
+          <>
+            {Object.entries(groupedData["Contra Asset"]).map(([acc, amt]) => (
+              <LineItem key={acc} accountName={`(${acc})`} amount={-amt} />
+            ))}
+          </>
+        )}
+
+        {/* Total */}
+        <div className="flex justify-between items-center py-2 border-t border-gray-200 font-semibold text-gray-800 mt-1">
+          <span className="font-bold">Total Non-Current Assets</span>
+          <span className="font-bold">
+            PKR{" "}
+            {subtractContra(
+              groupedData["Non-current Asset"],
+              groupedData["Contra Asset"]
+            ).toLocaleString()}
+          </span>
+        </div>
 
         {/* --- CURRENT ASSETS --- */}
         <h4 className="text-lg font-semibold text-green-700 mb-3 border-b border-green-200 mt-6">
@@ -216,24 +275,6 @@ const BalanceSheet = () => {
         {[
           "Current Asset"
         ].map((sub) => renderSection("Current Assets", sub))}
-
-        <h4 className="text-lg font-semibold text-green-700 mb-3 border-b border-green-200 mt-6">
-          Less: Contra Assets
-        </h4>
-        {[
-          "Contra Asset",
-        ].map((sub) => {
-          const accounts = groupedData[sub];
-          if (!accounts) return null;
-          return (
-            <div className="mb-6" >
-              {
-                Object.entries(accounts).map(([account, amount]) => (
-                  <LineItem key={account} accountName={account} amount={amount} />
-                ))
-              }
-            </div>)
-        })}
 
         <div className="mt-6 p-4 rounded-lg border border-gray-200 bg-gray-50">
           <div className="flex justify-between font-bold text-gray-800 mt-2">

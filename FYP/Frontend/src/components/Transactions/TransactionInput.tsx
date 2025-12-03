@@ -53,6 +53,7 @@ const TransactionInput: React.FC = () => {
 
     } catch (error) {
       addAlert("Error saving transaction. Please try again.", "error");
+      console.log(error)
     } finally {
       setLoading(false);
     }

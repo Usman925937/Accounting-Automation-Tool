@@ -5,42 +5,42 @@ import { calculateTotals } from '../../utils/CalculateTotals';
 
 const Dashboard: React.FC = () => {
   const { journalEntries } = useAccountingStore();
-  
+
   const { totals, totalEquity, stats, netIncome } = useMemo(() => {
     const totals = calculateTotals(journalEntries);
-  
-  const netIncome = totals.netIncome;
-  const totalEquity = totals.totalEquity;
 
-  const stats = [
-    {
-      name: 'Total Assets',
-      value: `PKR ${totals.assets.toLocaleString()}`,
-      icon: TrendingUp,
-      changeType: 'positive',
-    },
-    {
-      name: 'Total Liabilities',
-      value: `PKR ${totals.liabilities.toLocaleString()}`,
-      icon: TrendingDown,
-      changeType: 'negative',
-    },
-    {
-      name: 'Net Income',
-      value: `PKR ${netIncome.toLocaleString()}`,
-      icon: DollarSign,
-      changeType: 'positive',
-    },
-    {
-      name: 'Total Transactions',
-      value: journalEntries.length.toString(),
-      icon: BarChart3,
-      changeType: 'neutral',
-    },
-  ];
+    const netIncome = totals.netIncome;
+    const totalEquity = totals.totalEquity;
 
-  return { totals, totalEquity, stats, netIncome };
-    
+    const stats = [
+      {
+        name: 'Total Assets',
+        value: `PKR ${totals.assets.toLocaleString()}`,
+        icon: TrendingUp,
+        changeType: 'positive',
+      },
+      {
+        name: 'Total Liabilities',
+        value: `PKR ${totals.liabilities.toLocaleString()}`,
+        icon: TrendingDown,
+        changeType: 'negative',
+      },
+      {
+        name: 'Net Income',
+        value: `PKR ${netIncome.toLocaleString()}`,
+        icon: DollarSign,
+        changeType: 'positive',
+      },
+      {
+        name: 'Total Transactions',
+        value: journalEntries.length.toString(),
+        icon: BarChart3,
+        changeType: 'neutral',
+      },
+    ];
+
+    return { totals, totalEquity, stats, netIncome };
+
   }, [journalEntries]);
 
   return (
@@ -65,14 +65,12 @@ const Dashboard: React.FC = () => {
               <div className="p-5">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
-                    <div className={`p-3 rounded-xl ${
-                      item.changeType === 'positive' ? 'bg-green-100' :
-                      item.changeType === 'negative' ? 'bg-red-100' : 'bg-blue-100'
-                    }`}>
-                      <Icon className={`h-6 w-6 ${
-                        item.changeType === 'positive' ? 'text-green-600' :
-                        item.changeType === 'negative' ? 'text-red-600' : 'text-blue-600'
-                      }`} />
+                    <div className={`p-3 rounded-xl ${item.changeType === 'positive' ? 'bg-green-100' :
+                        item.changeType === 'negative' ? 'bg-red-100' : 'bg-blue-100'
+                      }`}>
+                      <Icon className={`h-6 w-6 ${item.changeType === 'positive' ? 'text-green-600' :
+                          item.changeType === 'negative' ? 'text-red-600' : 'text-blue-600'
+                        }`} />
                     </div>
                   </div>
                   <div className="ml-5 w-0 flex-1">
@@ -110,9 +108,8 @@ const Dashboard: React.FC = () => {
             </div>
             <div className="flex justify-between items-center py-3 bg-gradient-to-r from-blue-50 to-indigo-50 px-4 rounded-xl mt-4">
               <span className="text-sm font-bold text-blue-900">Balance Check</span>
-              <span className={`text-sm font-bold ${
-                Math.abs(totals.assets - (totals.liabilities + totalEquity)) < 1 ? 'text-green-600' : 'text-red-600'
-              }`}>
+              <span className={`text-sm font-bold ${Math.abs(totals.assets - (totals.liabilities + totalEquity)) < 1 ? 'text-green-600' : 'text-red-600'
+                }`}>
                 {Math.abs(totals.assets - (totals.liabilities + totalEquity)) < 1 ? 'Balanced ✓' : 'Unbalanced ⚠'}
               </span>
             </div>
@@ -133,9 +130,8 @@ const Dashboard: React.FC = () => {
               <span className="text-sm font-semibold text-gray-600">Expenses</span>
               <span className="text-lg font-bold text-red-600">PKR {totals.expenses.toLocaleString()}</span>
             </div>
-            <div className={`flex justify-between items-center py-3 px-4 rounded-xl mt-4 ${
-              netIncome >= 0 ? 'bg-gradient-to-r from-green-50 to-emerald-50' : 'bg-gradient-to-r from-red-50 to-pink-50'
-            }`}>
+            <div className={`flex justify-between items-center py-3 px-4 rounded-xl mt-4 ${netIncome >= 0 ? 'bg-gradient-to-r from-green-50 to-emerald-50' : 'bg-gradient-to-r from-red-50 to-pink-50'
+              }`}>
               <span className={`text-sm font-bold ${netIncome >= 0 ? 'text-green-900' : 'text-red-900'}`}>Net Income</span>
               <span className={`text-sm font-bold ${netIncome >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                 PKR {netIncome.toLocaleString()}

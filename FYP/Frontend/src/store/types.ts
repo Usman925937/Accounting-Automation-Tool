@@ -23,7 +23,8 @@ export type JournalEntry = {
         accountType: string,
         category: string,
         subCategory: string,
-        financialStatement: string
+        financialStatement: string,
+        cashFlowSection: string
     },
     creditAccount: {
         _id: string,
@@ -31,7 +32,8 @@ export type JournalEntry = {
         accountType: string,
         category: string,
         subCategory: string,
-        financialStatement: string
+        financialStatement: string,
+        cashFlowSection: string
     },
     amount: number,
     financialYear: string,
