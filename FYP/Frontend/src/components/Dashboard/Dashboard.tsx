@@ -1,14 +1,13 @@
 import React, { useMemo } from 'react';
 import { TrendingUp, TrendingDown, DollarSign, PieChart, BarChart3 } from 'lucide-react';
+import useCalculationsStore from '../../store/calculationsStore';
 import useAccountingStore from '../../store/accountingStore';
-import { calculateTotals } from '../../utils/CalculateTotals';
 
 const Dashboard: React.FC = () => {
+  const { totals } = useCalculationsStore();
   const { journalEntries } = useAccountingStore();
-
-  const { totals, totalEquity, stats, netIncome } = useMemo(() => {
-    const totals = calculateTotals(journalEntries);
-
+  
+  const { totalEquity, stats, netIncome } = useMemo(() => {
     const netIncome = totals.netIncome;
     const totalEquity = totals.totalEquity;
 
@@ -39,9 +38,9 @@ const Dashboard: React.FC = () => {
       },
     ];
 
-    return { totals, totalEquity, stats, netIncome };
+    return { totalEquity, stats, netIncome };
 
-  }, [journalEntries]);
+  }, [totals, journalEntries.length]);
 
   return (
     <div>
@@ -170,7 +169,7 @@ const Dashboard: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white/50 divide-y divide-gray-100">
-                  {journalEntries.slice(-5).map((entry) => (
+                  {journalEntries.slice(0, 5).map((entry) => (
                     <tr key={entry._id} className="hover:bg-white/80 transition-colors duration-200">
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {new Date(entry.date).toLocaleDateString()}

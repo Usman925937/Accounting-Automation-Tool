@@ -39,6 +39,9 @@ import useNotesStore from './store/notesStore';
 import About from './components/Layout/About';
 import FinancialRatios from './components/FinancialHealth/FinancialRatios';
 import ShariahCompliance from './components/ShariahCompliance/ShariahCompliance';
+import Budget from './components/Budget/Budget';
+import AddBudget from './components/Budget/AddBudget';
+import EditBudget from './components/Budget/EditBudget';
 
 const App = () => {
   const { setUser } = useAuthStore();
@@ -120,6 +123,9 @@ const App = () => {
           {/* Shariah Compliace Checker */}
           <Route path="shariah-compliance" element={<ShariahCompliance />} />
 
+          {/* Budget */}
+          <Route path="budget" element={<Budget />} />
+
         </Route>
 
         {/* Profile */}
@@ -139,6 +145,9 @@ const App = () => {
           <Route path="financial-years/:id/close" element={<CloseFinancialYear />} />
 
           <Route path="accounts/:accountId/edit" element={<EditAccount />} />
+
+          <Route path="budget/create" element={<AddBudget />} />
+          <Route path="budget/edit" element={<EditBudget />} />
         </Route>
 
         {/* Not Found */}

@@ -10,7 +10,8 @@ import {
   LogOut,
   Wallet,
   BookOpenText,
-  CheckCircle2
+  CheckCircle2,
+  PiggyBank
 } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
 import { useState } from 'react';
@@ -46,6 +47,8 @@ function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
     { id: 'accounts', name: 'Accounts', icon: Wallet, color: 'text-teal-600', path: '/accounts' },
     { id: 'notes', name: 'Notes', icon: BookOpenText, color: 'text-teal-600', path: '/notes' },
     { id: 'shariah', name: 'Shariah Compliance', icon: CheckCircle2, color: 'text-teal-600', path: '/shariah-compliance' },
+    
+    { id: 'budget', name: 'Budget', icon: PiggyBank, color: 'text-teal-600', path: '/budget' },
     
   ];
 

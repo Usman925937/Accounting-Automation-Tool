@@ -58,3 +58,27 @@ export type Note = {
     financialYear: string,
     financialStatement: string
 }
+
+export type BudgetItem = {
+    category: string;
+    subCategory?: string | null;
+    budgetedAmount: number;
+  };
+  
+  export type Budget = {
+    _id?: string;
+    financialYear: { _id: string; name: string };
+    company: string;
+  
+    revenue: BudgetItem[];
+    cogs: BudgetItem[];
+    operatingExpenses: BudgetItem[];
+    capex: BudgetItem[];
+    cashInflows: BudgetItem[];
+    cashOutflows: BudgetItem[];
+  
+    netIncome: number;
+  
+    createdBy?: string;
+    createdAt?: string;
+  };
