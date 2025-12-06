@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { ArrowLeft, Save } from 'lucide-react';
-import { useNavigate } from 'react-router-dom'; // Fixed import
+import { useNavigate } from 'react-router-dom';
 import api from '../../api/api';
-import type { Budget } from '../../store/types';
 import useAlertStore from '../../store/alertStore';
 import useAccountingStore from '../../store/accountingStore';
 import Spinner from '../Layout/Spinner';
@@ -13,7 +12,15 @@ const EditBudget = () => {
   const { activeFinancialYear } = useAccountingStore();
   const [loading, setLoading] = useState(true);
 
-  const [formData, setFormData] = useState<Budget | null>(null);
+   const [formData, setFormData] = useState({
+      revenue: '',
+      cogs: '',
+      operatingExpenses: '',
+      capex: '',
+      cashInflows: '',
+      cashOutflows: '',
+      netIncome: '',
+    });
 
   useEffect(() => {
     const fetchBudget = async () => {
@@ -21,17 +28,16 @@ const EditBudget = () => {
         setLoading(true);
         const res = await api.get('/budgets/current');
         const budget = res.data.budget;
+        console.log(budget);
 
         setFormData({
-          revenue: budget.revenue ?? 0,
-          cogs: budget.cogs ?? 0,
-          operatingExpenses: budget.operatingExpenses ?? 0,
-          capex: budget.capex ?? 0,
-          cashInflows: budget.cashInflows ?? 0,
-          cashOutflows: budget.cashOutflows ?? 0,
-          netIncome: budget.netIncome ?? 0,
-          financialYear: budget.financialYear,
-          company: budget.company,
+          revenue: budget.revenue.budgetedAmount ?? 0,
+          cogs: budget.cogs.budgetedAmount ?? 0,
+          operatingExpenses: budget.operatingExpenses.budgetedAmount ?? 0,
+          capex: budget.capex.budgetedAmount ?? 0,
+          cashInflows: budget.cashInflows.budgetedAmount ?? 0,
+          cashOutflows: budget.cashOutflows.budgetedAmount ?? 0,
+          netIncome: budget.netIncome.budgetedAmount ?? 0,
         });
       } catch (err) {
         addAlert('Failed to load budget', 'error');
@@ -96,8 +102,8 @@ const EditBudget = () => {
           <ArrowLeft className="w-5 h-5" /> Back
         </button>
 
-        <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-8">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-amber-500 to-orange-600 bg-clip-text text-transparent mb-8">
+        <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 p-8">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent mb-8">
             Edit Annual Budget
           </h1>
 
@@ -117,7 +123,7 @@ const EditBudget = () => {
                   value={typeof formData[field.name] === 'number' ? formData[field.name].toString() : '0'}
                   onChange={handleChange}
                   required
-                  className="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-amber-500/20 focus:border-amber-500 transition-all duration-200 bg-white/50 backdrop-blur-sm text-lg"
+                  className="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-600 transition-all duration-200 bg-white/50 backdrop-blur-sm text-lg"
                 />
               </div>
             ))}
@@ -133,7 +139,7 @@ const EditBudget = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-semibold rounded-xl shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+                className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold rounded-xl shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
               >
                 <Save className="w-5 h-5" />
                 {loading ? 'Saving...' : 'Update Budget'}

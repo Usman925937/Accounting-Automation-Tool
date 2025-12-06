@@ -38,7 +38,7 @@ app.use("/api/companies", companyRoutes);
 app.use("/api/financial-years", financialYearRoutes);
 app.use("/api/journal-entries", journalEntryRoutes);
 app.use("/api/notes", notesRoutes);
-app.use("api/budgets", budgetRoutes);
+app.use("/api/budgets", budgetRoutes);
 
 //db
 connectDb().then(() => {

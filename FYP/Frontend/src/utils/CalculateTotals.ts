@@ -19,6 +19,7 @@ export const calculateTotals = (entries: JournalEntry[]) => {
         netSales: 0,
         cogs: 0,
         grossProfit: 0,
+        operatingExpenses: 0,
         operatingProfit: 0, // EBIT
         profitBeforeTax: 0,
         netProfitAfterTax: 0,
@@ -35,7 +36,9 @@ export const calculateTotals = (entries: JournalEntry[]) => {
         netFixedAssets: 0,
         workingCapital: 0,
         netCreditSales: 0,
-        netCreditPurchases: 0
+        netCreditPurchases: 0,
+        cashInflows: 0,
+        cashOutflows: 0,
     };
 
     for (const entry of entries) {
@@ -177,6 +180,22 @@ export const calculateTotals = (entries: JournalEntry[]) => {
             creditAccount.cashFlowSection.toLowerCase().includes('operating')) {
             totals.operatingCashFlow -= amount;
         }
+
+        // operating expenses
+        if (debitAccount.subCategory.includes('Operating Expense')) {
+            totals.operatingExpenses += amount;
+        }
+        if (creditAccount.subCategory.includes('Operating Expense')) {
+            totals.operatingExpenses -= amount;
+        }
+
+        // cash inflows / outflows
+        if (debitAccount.accountName.toLocaleLowerCase().includes("cash") && debitAccount.subCategory === 'Current Asset') {
+            totals.cashInflows += amount;
+        }
+        if (creditAccount.accountName.toLocaleLowerCase().includes("cash") && creditAccount.subCategory === 'Current Asset') {
+            totals.cashOutflows += amount;
+        }
     }
 
     // Retained earnings (profit) flow into equity
@@ -192,8 +211,7 @@ export const calculateTotals = (entries: JournalEntry[]) => {
 
     // Operating Profit (EBIT) = Gross Profit - Operating Expenses
     // Operating Expenses = Total Expenses - COGS - Interest Expense
-    const operatingExpenses = totals.expenses - totals.cogs - totals.interestExpense;
-    totals.operatingProfit = totals.grossProfit - operatingExpenses;
+    totals.operatingProfit = totals.grossProfit - totals.operatingExpenses;
 
     // Profit Before Tax = Operating Profit - Interest Expense + Other Income
     totals.profitBeforeTax = totals.operatingProfit - totals.interestExpense;

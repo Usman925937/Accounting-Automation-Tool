@@ -65,19 +65,19 @@ export type BudgetItem = {
     budgetedAmount: number;
   };
   
-  export type Budget = {
+  export type BudgetType = {
     _id?: string;
     financialYear: { _id: string; name: string };
     company: string;
   
-    revenue: BudgetItem[];
-    cogs: BudgetItem[];
-    operatingExpenses: BudgetItem[];
-    capex: BudgetItem[];
-    cashInflows: BudgetItem[];
-    cashOutflows: BudgetItem[];
+    revenue: BudgetItem;
+    cogs: BudgetItem;
+    operatingExpenses: BudgetItem;
+    capex: BudgetItem;
+    cashInflows: BudgetItem;
+    cashOutflows: BudgetItem;
   
-    netIncome: number;
+    netIncome: BudgetItem;
   
     createdBy?: string;
     createdAt?: string;

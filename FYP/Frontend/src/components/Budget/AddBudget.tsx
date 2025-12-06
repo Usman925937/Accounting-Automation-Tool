@@ -6,7 +6,7 @@ import useAlertStore from '../../store/alertStore';
 import useAccountingStore from '../../store/accountingStore';
 import Spinner from '../Layout/Spinner';
 
-const CreateBudget = () => {
+const AddBudget = () => {
   const navigate = useNavigate();
   const { addAlert } = useAlertStore();
   const { activeFinancialYear } = useAccountingStore();
@@ -55,8 +55,8 @@ const CreateBudget = () => {
           <ArrowLeft className="w-5 h-5" /> Back
         </button>
 
-        <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-8">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent mb-8">
+        <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 p-8">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent mb-8">
             Create Annual Budget
           </h1>
 
@@ -82,7 +82,7 @@ const CreateBudget = () => {
                   value={formData[field.name as keyof typeof formData]}
                   onChange={handleChange}
                   required
-                  className="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all duration-200 bg-white/50 backdrop-blur-sm text-lg"
+                  className="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-600 transition-all duration-200 bg-white/50 backdrop-blur-sm text-lg"
                   placeholder="0"
                 />
               </div>
@@ -98,7 +98,7 @@ const CreateBudget = () => {
               </button>
               <button
                 type="submit"
-                className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-semibold rounded-xl transition-all duration-200 shadow-xl hover:shadow-2xl transform hover:scale-105"
+                className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold rounded-xl transition-all duration-200 shadow-xl hover:shadow-2xl transform hover:scale-105"
               >
                 <Save className="w-5 h-5" />
                 Save Budget
@@ -111,4 +111,4 @@ const CreateBudget = () => {
   );
 };
 
-export default CreateBudget;
+export default AddBudget;

@@ -40,8 +40,8 @@ import About from './components/Layout/About';
 import FinancialRatios from './components/FinancialHealth/FinancialRatios';
 import ShariahCompliance from './components/ShariahCompliance/ShariahCompliance';
 import Budget from './components/Budget/Budget';
-import AddBudget from './components/Budget/AddBudget';
 import EditBudget from './components/Budget/EditBudget';
+import AddBudget from './components/Budget/AddBudget';
 
 const App = () => {
   const { setUser } = useAuthStore();

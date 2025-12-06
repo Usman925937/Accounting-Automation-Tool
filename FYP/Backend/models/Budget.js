@@ -8,14 +8,13 @@ const BudgetItemSchema = new mongoose.Schema({
 
 const BudgetSchema = new mongoose.Schema({
   financialYear: { type: mongoose.Types.ObjectId, ref: 'FinancialYear', required: true }, 
-  revenue: [BudgetItemSchema],
-  cogs: [BudgetItemSchema],
-  operatingExpenses: [BudgetItemSchema],
-  capex: [BudgetItemSchema],
-  cashInflows: [BudgetItemSchema],
-  cashOutflows: [BudgetItemSchema],
-  
-  netIncome: { type: Number, default: 0 },
+  revenue: BudgetItemSchema,
+  cogs: BudgetItemSchema,
+  operatingExpenses: BudgetItemSchema,
+  capex: BudgetItemSchema,
+  cashInflows: BudgetItemSchema,
+  cashOutflows: BudgetItemSchema,
+  netIncome: BudgetItemSchema,
 
   company: { type: mongoose.Schema.Types.ObjectId, ref: "Company", required: true },
 

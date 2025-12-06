@@ -32,7 +32,7 @@ exports.getBudgets = async (req, res) => {
 exports.getBudget = async (req, res) => {
     try {
         const currentFY = await FinancialYear.findOne({
-            company: req.user.company,
+            companyId: req.user.company,
             isActive: true,
         });
 
@@ -74,7 +74,7 @@ exports.createBudget = async (req, res) => {
         } = req.body;
 
         const FY = await FinancialYear.findOne({
-            company: req.user.company,
+            companyId: req.user.company,
             isActive: true,
         });
         if (!FY)
@@ -89,13 +89,13 @@ exports.createBudget = async (req, res) => {
 
         let budget = await Budget.create({
             financialYear: FY._id,
-            revenue,
-            cogs,
-            operatingExpenses,
-            capex,
-            cashInflows,
-            cashOutflows,
-            netIncome,
+            revenue: {category: "Revenue", budgetedAmount: revenue},
+            cogs: {category: "COGS", budgetedAmount: cogs},
+            operatingExpenses: {category: "Operating Expenses", budgetedAmount: operatingExpenses},
+            capex: {category: "CAPEX", budgetedAmount: capex},
+            cashInflows: {category: "Cash Inflows", budgetedAmount: cashInflows},
+            cashOutflows: {category: "Cash Outflows", budgetedAmount: cashOutflows},
+            netIncome: {category: "Net Income", budgetedAmount: netIncome},
             createdBy: req.user._id,
             company: req.user.company,
         });
@@ -123,7 +123,7 @@ exports.createBudget = async (req, res) => {
 exports.updateBudget = async (req, res) => {
     try {
         const FY = await FinancialYear.findOne({
-            company: req.user.company,
+            companyId: req.user.company,
             isActive: true,
         });
         if (!FY)
@@ -149,13 +149,13 @@ exports.updateBudget = async (req, res) => {
                 .json({ message: "Budget not found for this company" });
 
         // Update fields
-        budget.revenue = revenue;
-        budget.cogs = cogs;
-        budget.operatingExpenses = operatingExpenses;
-        budget.capex = capex;
-        budget.cashInflows = cashInflows;
-        budget.cashOutflows = cashOutflows;
-        budget.netIncome = netIncome;
+        budget.revenue = {category: "Revenue", budgetedAmount: revenue};
+        budget.cogs = {category: "COGS", budgetedAmount: cogs};
+        budget.operatingExpenses = {category: "Operating Expenses", budgetedAmount: operatingExpenses};
+        budget.capex = {category: "CAPEX", budgetedAmount: capex};
+        budget.cashInflows = {category: "Cash Inflows", budgetedAmount: cashInflows};
+        budget.cashOutflows = {category: "Cash Outflows", budgetedAmount: cashOutflows};
+        budget.netIncome = {category: "Net Income", budgetedAmount: netIncome};
 
         await budget.save();
 
