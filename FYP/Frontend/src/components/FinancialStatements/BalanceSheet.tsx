@@ -127,7 +127,7 @@ const BalanceSheet = () => {
         <h2 className="text-xl font-bold text-gray-900">
           Statement of Financial Position (Balance Sheet)
         </h2>
-        <button className="flex items-center px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+        {/* <button className="flex items-center px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
           <svg
             className="h-4 w-4 mr-2"
             fill="none"
@@ -142,7 +142,7 @@ const BalanceSheet = () => {
             />
           </svg>
           Export
-        </button>
+        </button> */}
       </div>
 
       {/* BODY */}

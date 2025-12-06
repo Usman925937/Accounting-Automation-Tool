@@ -63,7 +63,7 @@ const ComprehensiveIncome = () => {
             {/* HEADER */}
             < div className="flex justify-between items-center mb-6" >
                 <h2 className="text-xl font-bold text-gray-900">Statement of Comprehensive Income</h2>
-                <button className="flex items-center px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                {/* <button className="flex items-center px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
                     <svg
                         className="h-4 w-4 mr-2"
                         fill="none"
@@ -78,7 +78,7 @@ const ComprehensiveIncome = () => {
                         />
                     </svg>
                     Export
-                </button>
+                </button> */}
             </div >
 
             <div className="bg-white rounded-lg p-6">
