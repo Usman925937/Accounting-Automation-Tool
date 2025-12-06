@@ -11,6 +11,10 @@ const Budget = () => {
     const [loading, setLoading] = useState(true);
     const { totals } = useCalculationsStore();
 
+    // Inflation state
+    const [adjustForInflation, setAdjustForInflation] = useState(false);
+    const [inflationRate, setInflationRate] = useState(6); // 6% default
+
     useEffect(() => {
         const fetchBudget = async () => {
             try {
@@ -29,37 +33,70 @@ const Budget = () => {
 
     const fmt = (num: number) => `$${Math.abs(num).toLocaleString()}`;
 
+    // Helper: Apply inflation compounding over years (assuming budget is for current or next year → 1-year forward adjustment)
+    const applyInflation = (baseAmount: number) => {
+        if (!adjustForInflation || inflationRate <= 0) return baseAmount;
+        const rate = inflationRate / 100;
+        // Simple 1-year forward inflation (you can extend to multi-year if needed)
+        return Math.round(baseAmount * (1 + rate));
+    };
+
     const budgetRows = budget ? [
-        { label: "Revenue", budgeted: budget.revenue?.budgetedAmount, actual: totals.revenue, icon: <TrendingUp className="w-5 h-5" />, favorableWhen: "higher" },
-        { label: "COGS", budgeted: budget.cogs?.budgetedAmount, actual: totals.cogs, icon: <TrendingDown className="w-5 h-5" />, favorableWhen: "lower" },
-        { 
-            label: "Operating Expenses", 
-            budgeted: budget.operatingExpenses?.budgetedAmount || 0, 
+        {
+            label: "Revenue",
+            budgeted: applyInflation(budget.revenue?.budgetedAmount || 0),
+            actual: totals.revenue,
+            icon: <TrendingUp className="w-5 h-5" />,
+            favorableWhen: "higher",
+            applyInflation: true
+        },
+        {
+            label: "COGS",
+            budgeted: applyInflation(budget.cogs?.budgetedAmount || 0),
+            actual: totals.cogs,
+            icon: <TrendingDown className="w-5 h-5" />,
+            favorableWhen: "lower",
+            applyInflation: true
+        },
+        {
+            label: "Operating Expenses",
+            budgeted: applyInflation(budget.operatingExpenses?.budgetedAmount || 0),
             actual: totals.operatingExpenses,
-            icon: <TrendingDown className="w-5 h-5" />, 
-            favorableWhen: "lower" 
+            icon: <TrendingDown className="w-5 h-5" />,
+            favorableWhen: "lower",
+            applyInflation: true
         },
-        { label: "Net Income", budgeted: budget.netIncome?.budgetedAmount, actual: totals.netIncome, icon: <DollarSign className="w-5 h-5" />, favorableWhen: "higher" },
-        { 
-            label: "Capex", 
-            budgeted: budget.capex?.budgetedAmount || 0, 
+        {
+            label: "Net Income",
+            budgeted: budget.netIncome?.budgetedAmount || 0,
+            actual: totals.netIncome,
+            icon: <DollarSign className="w-5 h-5" />,
+            favorableWhen: "higher",
+            applyInflation: false
+        },
+        {
+            label: "Capex",
+            budgeted: applyInflation(budget.capex?.budgetedAmount || 0),
             actual: Math.abs(totals.netFixedAssets),
-            icon: <TrendingDown className="w-5 h-5" />, 
-            favorableWhen: "lower" 
+            icon: <TrendingDown className="w-5 h-5" />,
+            favorableWhen: "lower",
+            applyInflation: true
         },
-        { 
-            label: "Cash Inflows", 
-            budgeted: budget.cashInflows?.budgetedAmount || 0, 
+        {
+            label: "Cash Inflows",
+            budgeted: budget.cashInflows?.budgetedAmount || 0,
             actual: totals.cashInflows,
-            icon: <ArrowUpRight className="w-5 h-5" />, 
-            favorableWhen: "higher" 
+            icon: <ArrowUpRight className="w-5 h-5" />,
+            favorableWhen: "higher",
+            applyInflation: false
         },
-        { 
-            label: "Cash Outflows", 
-            budgeted: budget.cashOutflows?.budgetedAmount || 0, 
+        {
+            label: "Cash Outflows",
+            budgeted: budget.cashOutflows?.budgetedAmount || 0,
             actual: totals.cashOutflows,
-            icon: <ArrowDownRight className="w-5 h-5" />, 
-            favorableWhen: "lower" 
+            icon: <ArrowDownRight className="w-5 h-5" />,
+            favorableWhen: "lower",
+            applyInflation: false
         }
     ] : [];
 
@@ -93,6 +130,41 @@ const Budget = () => {
                     </div>
                 </div>
 
+                {/* Inflation Toggle & Rate Input */}
+                <div className="mb-6 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/30 p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div className="flex items-center gap-4">
+                        <label className="relative inline-flex items-center cursor-pointer">
+                            <input
+                                type="checkbox"
+                                checked={adjustForInflation}
+                                onChange={(e) => setAdjustForInflation(e.target.checked)}
+                                className="sr-only peer"
+                            />
+                            <div className="w-12 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-blue-600 peer-checked:to-indigo-600"></div>
+                            <span className="ml-3 text-lg font-medium text-gray-800">Adjust for Inflation</span>
+                        </label>
+
+                        <div className="flex items-center gap-2">
+                            <input
+                                type="number"
+                                value={inflationRate}
+                                onChange={(e) => setInflationRate(Number(e.target.value))}
+                                className="w-20 px-3 py-2 border border-gray-300 rounded-lg text-center font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                min="0"
+                                max="50"
+                                step="0.1"
+                            />
+                            <span className="text-gray-600 font-medium">%</span>
+                        </div>
+                    </div>
+
+                    {adjustForInflation && (
+                        <p className="text-sm text-gray-600 italic">
+                            Inflation applied annually to: <strong>Revenue, COGS, Operating Expenses, CapEx</strong>
+                        </p>
+                    )}
+                </div>
+
                 {!budget ? (
                     <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 p-12 text-center">
                         <Calendar className="w-16 h-16 mx-auto text-gray-400 mb-4" />
@@ -108,7 +180,9 @@ const Budget = () => {
                                     <thead>
                                         <tr className="bg-gradient-to-r from-blue-600/10 to-indigo-600/10">
                                             <th className="px-8 py-6 text-left text-sm font-semibold text-gray-700">Category</th>
-                                            <th className="px-8 py-6 text-right text-sm font-semibold text-gray-700">Budget</th>
+                                            <th className="px-8 py-6 text-right text-sm font-semibold text-gray-700">
+                                                Budget {adjustForInflation && "(Inflation-Adjusted)"}
+                                            </th>
                                             <th className="px-8 py-6 text-right text-sm font-semibold text-gray-700">Actual</th>
                                             <th className="px-8 py-6 text-right text-sm font-semibold text-gray-700">Difference</th>
                                             <th className="px-8 py-6 text-center text-sm font-semibold text-gray-700">Variance</th>
@@ -116,7 +190,29 @@ const Budget = () => {
                                     </thead>
                                     <tbody className="divide-y divide-gray-200/60">
                                         {budgetRows.map((row, i) => {
-                                            const diff = row.actual - row.budgeted;
+                                            // Properly extract the original budgeted amount based on label
+                                            const getOriginalBudgeted = () => {
+                                                if (!budget) return 0;
+                                                switch (row.label) {
+                                                    case "Revenue": return budget.revenue?.budgetedAmount || 0;
+                                                    case "COGS": return budget.cogs?.budgetedAmount || 0;
+                                                    case "Operating Expenses": return budget.operatingExpenses?.budgetedAmount || 0;
+                                                    case "Net Income": return budget.netIncome?.budgetedAmount || 0;
+                                                    case "Capex": return budget.capex?.budgetedAmount || 0;
+                                                    case "Cash Inflows": return budget.cashInflows?.budgetedAmount || 0;
+                                                    case "Cash Outflows": return budget.cashOutflows?.budgetedAmount || 0;
+                                                    default: return 0;
+                                                }
+                                            };
+
+                                            const originalBudgeted = getOriginalBudgeted();
+
+                                            // Apply inflation only if toggle is on AND this row should be inflated
+                                            const displayBudgeted = row.applyInflation && adjustForInflation
+                                                ? Math.round(originalBudgeted * (1 + inflationRate / 100))
+                                                : originalBudgeted;
+
+                                            const diff = row.actual - displayBudgeted;
                                             const isFavorable = row.favorableWhen === "higher" ? diff >= 0 : diff <= 0;
                                             const absDiff = Math.abs(diff);
 
@@ -128,7 +224,7 @@ const Budget = () => {
                                                         </div>
                                                         <span className="font-medium text-gray-800">{row.label}</span>
                                                     </td>
-                                                    <td className="px-8 py-6 text-right font-semibold text-gray-700">{fmt(row.budgeted)}</td>
+                                                    <td className="px-8 py-6 text-right font-semibold text-gray-700">{fmt(displayBudgeted)}</td>
                                                     <td className="px-8 py-6 text-right font-semibold text-gray-900">{fmt(row.actual)}</td>
                                                     <td className={`px-8 py-6 text-right font-bold ${diff >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                                                         {diff >= 0 ? '+' : '-'}{fmt(absDiff)}
@@ -152,7 +248,7 @@ const Budget = () => {
                             </div>
                         </div>
 
-                        {/* Beautiful Assumptions & Notes Section */}
+                        {/* Assumptions Section (unchanged) */}
                         <div className="bg-white/70 backdrop-blur-md rounded-3xl shadow-xl border border-white/40 p-8">
                             <div className="flex items-center gap-3 mb-6">
                                 <div className="p-3 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl shadow-lg">
@@ -205,7 +301,7 @@ const Budget = () => {
 
                             <div className="mt-6 pt-6 border-t border-gray-200/60 flex items-center gap-2 text-sm text-gray-500">
                                 <Info className="w-4 h-4" />
-                                <span>Data is calculated in real-time from journal entries. Last updated: {new Date().toLocaleDateString()}</span>
+                                <span>Data is calculated in real-time from journal entries. Last updated: {new Date().toLocaleString()}</span>
                             </div>
                         </div>
                     </>
