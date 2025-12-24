@@ -31,7 +31,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 //routes
-app.use("/api", authMiddleware, isApprovedMiddleware, initialSetup);
+app.use("/api/initial-setup", authMiddleware, isApprovedMiddleware, initialSetup);
 app.use("/api/companies/:companyId/accounts", authMiddleware, isApprovedMiddleware, accountRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/auth", authRoutes);
